@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsPtDriver", "WindowsPtDriver\WindowsIntelPtDriver.vcxproj", "{44253DD8-98B2-4229-8305-5DD1E272CDE3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|Win32.Build.0 = Debug|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|x64.ActiveCfg = Debug|x64
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|x64.Build.0 = Debug|x64
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Debug|x64.Deploy.0 = Debug|x64
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|Any CPU.ActiveCfg = Release|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|Win32.ActiveCfg = Release|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|Win32.Build.0 = Release|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|Win32.Deploy.0 = Release|Win32
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|x64.ActiveCfg = Release|x64
+		{44253DD8-98B2-4229-8305-5DD1E272CDE3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
