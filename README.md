@@ -14,6 +14,14 @@ Primary benefits include:
 * Uses a compressed logging format that is suitable for long running traces 
 * Able to trace all branches on a CPU core including userspace and kernel 
 
+**Driver Features**
+
+* Trace user processes using CR3 filtering
+* Trace kernel mode drivers using linear range filtering
+* Trace up to four arbitrary ranges of physical memory
+* Log to single physical address range 
+* Log to table of physical pages and map to virtual address range
+
 **Build Instructions**
 
 * Open the included Visual Studio Project file in Visual Studio 2013 or 2015.
@@ -32,12 +40,10 @@ Primary benefits include:
 This driver currently supports tracing on only one CPU core at a time, traced processes must be launched 
 with processor affinity set in order to capture a full trace. This is a software limitation we will fix
 eventually, but is not a priority for our use case. Please open a bug if this feature is important to you. 
- 
-The driver is currently hardcoded to trace only a single usermode process via CR3 filtering. Intel 
-Processor Trace is capable of tracing all threads executing on a CPU core including kernel and all
-user processes scheduled on that core. This can be configured by modifing the Intel PT configuration 
-flags, but this is not currently exposed through an IOCTL. 
 
+All threads in a usermode process will log to a single buffer, making it difficult to determine accurate 
+execution per-thread. This something we are working to fix.
+ 
 The IOCTLs for this driver must not be called from within the traced process. The driver maps the 
 physical memory ranges holding the trace data into the process that initialized the trace, this is
 unstable if mapped into the trace target. Use the included command line tool for executing traces 
@@ -51,8 +57,8 @@ The driver currently executes a DbgBreak() on load if a kernel debugger is attac
 
 **TODO List**
 
-* Implement address range filtering - up to four virtual address ranges may be specified to target specific binaries in the process space
-* Output sideband memory map information for post processing (this should be done by the usermode launcher process)
+* Output sideband memory map information for post processing
+* Per-thread logging
 * Implement multi-core tracing 
 
 
