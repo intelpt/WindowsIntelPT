@@ -1,0 +1,1599 @@
+Microsoft (R) COFF/PE Dumper Version 14.00.24213.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file libipt.lib
+
+File Type: LIBRARY
+
+Archive member name at 8: /               
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+     B10 size
+correct header end
+
+    107 public symbols
+
+     16AA __IMPORT_DESCRIPTOR_libipt
+     18D0 __NULL_IMPORT_DESCRIPTOR
+     1A06 libipt_NULL_THUNK_DATA
+     1DDE __imp__pt_errstr
+     1DDE _pt_errstr
+     2844 __imp__pt_pkt_alloc_decoder
+     2844 _pt_pkt_alloc_decoder
+     28B6 __imp__pt_pkt_free_decoder
+     28B6 _pt_pkt_free_decoder
+     2B50 __imp__pt_pkt_sync_forward
+     2B50 _pt_pkt_sync_forward
+     2ADE __imp__pt_pkt_sync_backward
+     2ADE _pt_pkt_sync_backward
+     2BC0 __imp__pt_pkt_sync_set
+     2BC0 _pt_pkt_sync_set
+     2994 __imp__pt_pkt_get_offset
+     2994 _pt_pkt_get_offset
+     2A02 __imp__pt_pkt_get_sync_offset
+     2A02 _pt_pkt_get_sync_offset
+     2926 __imp__pt_pkt_get_config
+     2926 _pt_pkt_get_config
+     2A76 __imp__pt_pkt_next
+     2A76 _pt_pkt_next
+     2C2C __imp__pt_qry_alloc_decoder
+     2C2C _pt_qry_alloc_decoder
+     2DEA __imp__pt_qry_free_decoder
+     2DEA _pt_qry_free_decoder
+     3090 __imp__pt_qry_sync_forward
+     3090 _pt_qry_sync_forward
+     301E __imp__pt_qry_sync_backward
+     301E _pt_qry_sync_backward
+     3100 __imp__pt_qry_sync_set
+     3100 _pt_qry_sync_set
+     2EC8 __imp__pt_qry_get_offset
+     2EC8 _pt_qry_get_offset
+     2F36 __imp__pt_qry_get_sync_offset
+     2F36 _pt_qry_get_sync_offset
+     2E5A __imp__pt_qry_get_config
+     2E5A _pt_qry_get_config
+     2C9E __imp__pt_qry_cond_branch
+     2C9E _pt_qry_cond_branch
+     2FAA __imp__pt_qry_indirect_branch
+     2FAA _pt_qry_indirect_branch
+     2D80 __imp__pt_qry_event
+     2D80 _pt_qry_event
+     316C __imp__pt_qry_time
+     316C _pt_qry_time
+     2D0E __imp__pt_qry_core_bus_ratio
+     2D0E _pt_qry_core_bus_ratio
+     1B56 __imp__pt_alloc_encoder
+     1B56 _pt_alloc_encoder
+     1E44 __imp__pt_free_encoder
+     1E44 _pt_free_encoder
+     1D72 __imp__pt_enc_sync_set
+     1D72 _pt_enc_sync_set
+     1C9C __imp__pt_enc_get_offset
+     1C9C _pt_enc_get_offset
+     1C2E __imp__pt_enc_get_config
+     1C2E _pt_enc_get_config
+     1D0A __imp__pt_enc_next
+     1D0A _pt_enc_next
+     27D4 __imp__pt_library_version
+     27D4 _pt_library_version
+     1F1E __imp__pt_image_alloc
+     1F1E _pt_image_alloc
+     1FF4 __imp__pt_image_free
+     1FF4 _pt_image_free
+     205E __imp__pt_image_name
+     205E _pt_image_name
+     1EB0 __imp__pt_image_add_file
+     1EB0 _pt_image_add_file
+     1F8A __imp__pt_image_copy
+     1F8A _pt_image_copy
+     213C __imp__pt_image_remove_by_filename
+     213C _pt_image_remove_by_filename
+     20C8 __imp__pt_image_remove_by_asid
+     20C8 _pt_image_remove_by_asid
+     21B4 __imp__pt_image_set_callback
+     21B4 _pt_image_set_callback
+     2226 __imp__pt_insn_alloc_decoder
+     2226 _pt_insn_alloc_decoder
+     230C __imp__pt_insn_free_decoder
+     230C _pt_insn_free_decoder
+     268A __imp__pt_insn_sync_forward
+     268A _pt_insn_sync_forward
+     2618 __imp__pt_insn_sync_backward
+     2618 _pt_insn_sync_backward
+     26FC __imp__pt_insn_sync_set
+     26FC _pt_insn_sync_set
+     245C __imp__pt_insn_get_offset
+     245C _pt_insn_get_offset
+     24CC __imp__pt_insn_get_sync_offset
+     24CC _pt_insn_get_sync_offset
+     23EE __imp__pt_insn_get_image
+     23EE _pt_insn_get_image
+     25AA __imp__pt_insn_set_image
+     25AA _pt_insn_set_image
+     237E __imp__pt_insn_get_config
+     237E _pt_insn_get_config
+     276A __imp__pt_insn_time
+     276A _pt_insn_time
+     2298 __imp__pt_insn_core_bus_ratio
+     2298 _pt_insn_core_bus_ratio
+     2540 __imp__pt_insn_next
+     2540 _pt_insn_next
+     1BC4 __imp__pt_cpu_errata
+     1BC4 _pt_cpu_errata
+
+Archive member name at B54: /               
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+     B1A size
+correct header end
+
+    55 offsets
+
+        1     16AA
+        2     18D0
+        3     1A06
+        4     1DDE
+        5     2844
+        6     28B6
+        7     2B50
+        8     2ADE
+        9     2BC0
+        A     2994
+        B     2A02
+        C     2926
+        D     2A76
+        E     2C2C
+        F     2DEA
+       10     3090
+       11     301E
+       12     3100
+       13     2EC8
+       14     2F36
+       15     2E5A
+       16     2C9E
+       17     2FAA
+       18     2D80
+       19     316C
+       1A     2D0E
+       1B     1B56
+       1C     1E44
+       1D     1D72
+       1E     1C9C
+       1F     1C2E
+       20     1D0A
+       21     27D4
+       22     1F1E
+       23     1FF4
+       24     205E
+       25     1EB0
+       26     1F8A
+       27     213C
+       28     20C8
+       29     21B4
+       2A     2226
+       2B     230C
+       2C     268A
+       2D     2618
+       2E     26FC
+       2F     245C
+       30     24CC
+       31     23EE
+       32     25AA
+       33     237E
+       34     276A
+       35     2298
+       36     2540
+       37     1BC4
+
+    107 public symbols
+
+        1 __IMPORT_DESCRIPTOR_libipt
+        2 __NULL_IMPORT_DESCRIPTOR
+       1B __imp__pt_alloc_encoder
+       37 __imp__pt_cpu_errata
+       1F __imp__pt_enc_get_config
+       1E __imp__pt_enc_get_offset
+       20 __imp__pt_enc_next
+       1D __imp__pt_enc_sync_set
+        4 __imp__pt_errstr
+       1C __imp__pt_free_encoder
+       25 __imp__pt_image_add_file
+       22 __imp__pt_image_alloc
+       26 __imp__pt_image_copy
+       23 __imp__pt_image_free
+       24 __imp__pt_image_name
+       28 __imp__pt_image_remove_by_asid
+       27 __imp__pt_image_remove_by_filename
+       29 __imp__pt_image_set_callback
+       2A __imp__pt_insn_alloc_decoder
+       35 __imp__pt_insn_core_bus_ratio
+       2B __imp__pt_insn_free_decoder
+       33 __imp__pt_insn_get_config
+       31 __imp__pt_insn_get_image
+       2F __imp__pt_insn_get_offset
+       30 __imp__pt_insn_get_sync_offset
+       36 __imp__pt_insn_next
+       32 __imp__pt_insn_set_image
+       2D __imp__pt_insn_sync_backward
+       2C __imp__pt_insn_sync_forward
+       2E __imp__pt_insn_sync_set
+       34 __imp__pt_insn_time
+       21 __imp__pt_library_version
+        5 __imp__pt_pkt_alloc_decoder
+        6 __imp__pt_pkt_free_decoder
+        C __imp__pt_pkt_get_config
+        A __imp__pt_pkt_get_offset
+        B __imp__pt_pkt_get_sync_offset
+        D __imp__pt_pkt_next
+        8 __imp__pt_pkt_sync_backward
+        7 __imp__pt_pkt_sync_forward
+        9 __imp__pt_pkt_sync_set
+        E __imp__pt_qry_alloc_decoder
+       16 __imp__pt_qry_cond_branch
+       1A __imp__pt_qry_core_bus_ratio
+       18 __imp__pt_qry_event
+        F __imp__pt_qry_free_decoder
+       15 __imp__pt_qry_get_config
+       13 __imp__pt_qry_get_offset
+       14 __imp__pt_qry_get_sync_offset
+       17 __imp__pt_qry_indirect_branch
+       11 __imp__pt_qry_sync_backward
+       10 __imp__pt_qry_sync_forward
+       12 __imp__pt_qry_sync_set
+       19 __imp__pt_qry_time
+       1B _pt_alloc_encoder
+       37 _pt_cpu_errata
+       1F _pt_enc_get_config
+       1E _pt_enc_get_offset
+       20 _pt_enc_next
+       1D _pt_enc_sync_set
+        4 _pt_errstr
+       1C _pt_free_encoder
+       25 _pt_image_add_file
+       22 _pt_image_alloc
+       26 _pt_image_copy
+       23 _pt_image_free
+       24 _pt_image_name
+       28 _pt_image_remove_by_asid
+       27 _pt_image_remove_by_filename
+       29 _pt_image_set_callback
+       2A _pt_insn_alloc_decoder
+       35 _pt_insn_core_bus_ratio
+       2B _pt_insn_free_decoder
+       33 _pt_insn_get_config
+       31 _pt_insn_get_image
+       2F _pt_insn_get_offset
+       30 _pt_insn_get_sync_offset
+       36 _pt_insn_next
+       32 _pt_insn_set_image
+       2D _pt_insn_sync_backward
+       2C _pt_insn_sync_forward
+       2E _pt_insn_sync_set
+       34 _pt_insn_time
+       21 _pt_library_version
+        5 _pt_pkt_alloc_decoder
+        6 _pt_pkt_free_decoder
+        C _pt_pkt_get_config
+        A _pt_pkt_get_offset
+        B _pt_pkt_get_sync_offset
+        D _pt_pkt_next
+        8 _pt_pkt_sync_backward
+        7 _pt_pkt_sync_forward
+        9 _pt_pkt_sync_set
+        E _pt_qry_alloc_decoder
+       16 _pt_qry_cond_branch
+       1A _pt_qry_core_bus_ratio
+       18 _pt_qry_event
+        F _pt_qry_free_decoder
+       15 _pt_qry_get_config
+       13 _pt_qry_get_offset
+       14 _pt_qry_get_sync_offset
+       17 _pt_qry_indirect_branch
+       11 _pt_qry_sync_backward
+       10 _pt_qry_sync_forward
+       12 _pt_qry_sync_set
+       19 _pt_qry_time
+        3 libipt_NULL_THUNK_DATA
+
+Archive member name at 16AA: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+     1EA size
+correct header end
+
+FILE HEADER VALUES
+             14C machine (x86)
+               3 number of sections
+        576C57B6 time date stamp Thu Jun 23 22:42:14 2016
+             10A file pointer to symbol table
+               8 number of symbols
+               0 size of optional header
+             100 characteristics
+                   32 bit word machine
+
+SECTION HEADER #1
+.debug$S name
+       0 physical address
+       0 virtual address
+      40 size of raw data
+      8C file pointer to raw data (0000008C to 000000CB)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #1
+  00000000: 02 00 00 00 11 00 09 00 00 00 00 00 0A 6C 69 62  .............lib
+  00000010: 69 70 74 2E 64 6C 6C 27 00 13 10 07 00 00 00 03  ipt.dll'........
+  00000020: 00 00 00 00 00 00 00 0C 00 00 00 0D 52 12 4D 69  ............R.Mi
+  00000030: 63 72 6F 73 6F 66 74 20 28 52 29 20 4C 49 4E 4B  crosoft (R) LINK
+
+SECTION HEADER #2
+.idata$2 name
+       0 physical address
+       0 virtual address
+      14 size of raw data
+      CC file pointer to raw data (000000CC to 000000DF)
+      E0 file pointer to relocation table
+       0 file pointer to line numbers
+       3 number of relocations
+       0 number of line numbers
+C0300040 flags
+         Initialized Data
+         4 byte align
+         Read Write
+
+RAW DATA #2
+  00000000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  00000010: 00 00 00 00                                      ....
+
+RELOCATIONS #2
+                                                Symbol    Symbol
+ Offset    Type              Applied To         Index     Name
+ --------  ----------------  -----------------  --------  ------
+ 0000000C  DIR32NB                    00000000         3  .idata$6
+ 00000000  DIR32NB                    00000000         4  .idata$4
+ 00000010  DIR32NB                    00000000         5  .idata$5
+
+SECTION HEADER #3
+.idata$6 name
+       0 physical address
+       0 virtual address
+       C size of raw data
+      FE file pointer to raw data (000000FE to 00000109)
+      E0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0200040 flags
+         Initialized Data
+         2 byte align
+         Read Write
+
+RAW DATA #3
+  00000000: 6C 69 62 69 70 74 2E 64 6C 6C 00 00              libipt.dll..
+
+COFF SYMBOL TABLE
+000 00DD520D ABS    notype       Static       | @comp.id
+001 00000000 SECT2  notype       External     | __IMPORT_DESCRIPTOR_libipt
+002 C0000040 SECT2  notype       Section      | .idata$2
+003 00000000 SECT3  notype       Static       | .idata$6
+004 C0000040 UNDEF  notype       Section      | .idata$4
+005 C0000040 UNDEF  notype       Section      | .idata$5
+006 00000000 UNDEF  notype       External     | __NULL_IMPORT_DESCRIPTOR
+007 00000000 UNDEF  notype       External     | libipt_NULL_THUNK_DATA
+
+String Table Size = 0x50 bytes
+
+Archive member name at 18D0: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      F9 size
+correct header end
+
+FILE HEADER VALUES
+             14C machine (x86)
+               2 number of sections
+        576C57B6 time date stamp Thu Jun 23 22:42:14 2016
+              B8 file pointer to symbol table
+               2 number of symbols
+               0 size of optional header
+             100 characteristics
+                   32 bit word machine
+
+SECTION HEADER #1
+.debug$S name
+       0 physical address
+       0 virtual address
+      40 size of raw data
+      64 file pointer to raw data (00000064 to 000000A3)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #1
+  00000000: 02 00 00 00 11 00 09 00 00 00 00 00 0A 6C 69 62  .............lib
+  00000010: 69 70 74 2E 64 6C 6C 27 00 13 10 07 00 00 00 03  ipt.dll'........
+  00000020: 00 00 00 00 00 00 00 0C 00 00 00 0D 52 12 4D 69  ............R.Mi
+  00000030: 63 72 6F 73 6F 66 74 20 28 52 29 20 4C 49 4E 4B  crosoft (R) LINK
+
+SECTION HEADER #2
+.idata$3 name
+       0 physical address
+       0 virtual address
+      14 size of raw data
+      A4 file pointer to raw data (000000A4 to 000000B7)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0300040 flags
+         Initialized Data
+         4 byte align
+         Read Write
+
+RAW DATA #2
+  00000000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  00000010: 00 00 00 00                                      ....
+
+COFF SYMBOL TABLE
+000 00DD520D ABS    notype       Static       | @comp.id
+001 00000000 SECT2  notype       External     | __NULL_IMPORT_DESCRIPTOR
+
+String Table Size = 0x1D bytes
+
+Archive member name at 1A06: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+     114 size
+correct header end
+
+FILE HEADER VALUES
+             14C machine (x86)
+               3 number of sections
+        576C57B6 time date stamp Thu Jun 23 22:42:14 2016
+              D4 file pointer to symbol table
+               2 number of symbols
+               0 size of optional header
+             100 characteristics
+                   32 bit word machine
+
+SECTION HEADER #1
+.debug$S name
+       0 physical address
+       0 virtual address
+      40 size of raw data
+      8C file pointer to raw data (0000008C to 000000CB)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+42100040 flags
+         Initialized Data
+         Discardable
+         1 byte align
+         Read Only
+
+RAW DATA #1
+  00000000: 02 00 00 00 11 00 09 00 00 00 00 00 0A 6C 69 62  .............lib
+  00000010: 69 70 74 2E 64 6C 6C 27 00 13 10 07 00 00 00 03  ipt.dll'........
+  00000020: 00 00 00 00 00 00 00 0C 00 00 00 0D 52 12 4D 69  ............R.Mi
+  00000030: 63 72 6F 73 6F 66 74 20 28 52 29 20 4C 49 4E 4B  crosoft (R) LINK
+
+SECTION HEADER #2
+.idata$5 name
+       0 physical address
+       0 virtual address
+       4 size of raw data
+      CC file pointer to raw data (000000CC to 000000CF)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0300040 flags
+         Initialized Data
+         4 byte align
+         Read Write
+
+RAW DATA #2
+  00000000: 00 00 00 00                                      ....
+
+SECTION HEADER #3
+.idata$4 name
+       0 physical address
+       0 virtual address
+       4 size of raw data
+      D0 file pointer to raw data (000000D0 to 000000D3)
+       0 file pointer to relocation table
+       0 file pointer to line numbers
+       0 number of relocations
+       0 number of line numbers
+C0300040 flags
+         Initialized Data
+         4 byte align
+         Read Write
+
+RAW DATA #3
+  00000000: 00 00 00 00                                      ....
+
+COFF SYMBOL TABLE
+000 00DD520D ABS    notype       Static       | @comp.id
+001 00000000 SECT2  notype       External     | libipt_NULL_THUNK_DATA
+
+String Table Size = 0x1C bytes
+
+Archive member name at 1B56: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      31 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001D
+  DLL name     : libipt.dll
+  Symbol name  : _pt_alloc_encoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 0
+  Name         : pt_alloc_encoder
+
+Archive member name at 1BC4: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2E size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001A
+  DLL name     : libipt.dll
+  Symbol name  : _pt_cpu_errata
+  Type         : code
+  Name type    : no prefix
+  Hint         : 1
+  Name         : pt_cpu_errata
+
+Archive member name at 1C2E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_enc_get_config
+  Type         : code
+  Name type    : no prefix
+  Hint         : 2
+  Name         : pt_enc_get_config
+
+Archive member name at 1C9C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_enc_get_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 3
+  Name         : pt_enc_get_offset
+
+Archive member name at 1D0A: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2C size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000018
+  DLL name     : libipt.dll
+  Symbol name  : _pt_enc_next
+  Type         : code
+  Name type    : no prefix
+  Hint         : 4
+  Name         : pt_enc_next
+
+Archive member name at 1D72: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      30 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001C
+  DLL name     : libipt.dll
+  Symbol name  : _pt_enc_sync_set
+  Type         : code
+  Name type    : no prefix
+  Hint         : 5
+  Name         : pt_enc_sync_set
+
+Archive member name at 1DDE: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2A size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000016
+  DLL name     : libipt.dll
+  Symbol name  : _pt_errstr
+  Type         : code
+  Name type    : no prefix
+  Hint         : 6
+  Name         : pt_errstr
+
+Archive member name at 1E44: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      30 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001C
+  DLL name     : libipt.dll
+  Symbol name  : _pt_free_encoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 7
+  Name         : pt_free_encoder
+
+Archive member name at 1EB0: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_add_file
+  Type         : code
+  Name type    : no prefix
+  Hint         : 8
+  Name         : pt_image_add_file
+
+Archive member name at 1F1E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2F size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001B
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_alloc
+  Type         : code
+  Name type    : no prefix
+  Hint         : 9
+  Name         : pt_image_alloc
+
+Archive member name at 1F8A: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2E size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001A
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_copy
+  Type         : code
+  Name type    : no prefix
+  Hint         : 10
+  Name         : pt_image_copy
+
+Archive member name at 1FF4: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2E size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001A
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_free
+  Type         : code
+  Name type    : no prefix
+  Hint         : 11
+  Name         : pt_image_free
+
+Archive member name at 205E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2E size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001A
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_name
+  Type         : code
+  Name type    : no prefix
+  Hint         : 12
+  Name         : pt_image_name
+
+Archive member name at 20C8: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      38 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000024
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_remove_by_asid
+  Type         : code
+  Name type    : no prefix
+  Hint         : 13
+  Name         : pt_image_remove_by_asid
+
+Archive member name at 213C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      3C size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000028
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_remove_by_filename
+  Type         : code
+  Name type    : no prefix
+  Hint         : 14
+  Name         : pt_image_remove_by_filename
+
+Archive member name at 21B4: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      36 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000022
+  DLL name     : libipt.dll
+  Symbol name  : _pt_image_set_callback
+  Type         : code
+  Name type    : no prefix
+  Hint         : 15
+  Name         : pt_image_set_callback
+
+Archive member name at 2226: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      36 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000022
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_alloc_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 16
+  Name         : pt_insn_alloc_decoder
+
+Archive member name at 2298: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      37 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000023
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_core_bus_ratio
+  Type         : code
+  Name type    : no prefix
+  Hint         : 17
+  Name         : pt_insn_core_bus_ratio
+
+Archive member name at 230C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_free_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 18
+  Name         : pt_insn_free_decoder
+
+Archive member name at 237E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      33 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001F
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_get_config
+  Type         : code
+  Name type    : no prefix
+  Hint         : 19
+  Name         : pt_insn_get_config
+
+Archive member name at 23EE: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_get_image
+  Type         : code
+  Name type    : no prefix
+  Hint         : 20
+  Name         : pt_insn_get_image
+
+Archive member name at 245C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      33 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001F
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_get_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 21
+  Name         : pt_insn_get_offset
+
+Archive member name at 24CC: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      38 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000024
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_get_sync_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 22
+  Name         : pt_insn_get_sync_offset
+
+Archive member name at 2540: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2D size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000019
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_next
+  Type         : code
+  Name type    : no prefix
+  Hint         : 23
+  Name         : pt_insn_next
+
+Archive member name at 25AA: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_set_image
+  Type         : code
+  Name type    : no prefix
+  Hint         : 24
+  Name         : pt_insn_set_image
+
+Archive member name at 2618: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      36 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000022
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_sync_backward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 25
+  Name         : pt_insn_sync_backward
+
+Archive member name at 268A: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_sync_forward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 26
+  Name         : pt_insn_sync_forward
+
+Archive member name at 26FC: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      31 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001D
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_sync_set
+  Type         : code
+  Name type    : no prefix
+  Hint         : 27
+  Name         : pt_insn_sync_set
+
+Archive member name at 276A: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2D size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000019
+  DLL name     : libipt.dll
+  Symbol name  : _pt_insn_time
+  Type         : code
+  Name type    : no prefix
+  Hint         : 28
+  Name         : pt_insn_time
+
+Archive member name at 27D4: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      33 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001F
+  DLL name     : libipt.dll
+  Symbol name  : _pt_library_version
+  Type         : code
+  Name type    : no prefix
+  Hint         : 29
+  Name         : pt_library_version
+
+Archive member name at 2844: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_alloc_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 30
+  Name         : pt_pkt_alloc_decoder
+
+Archive member name at 28B6: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      34 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000020
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_free_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 31
+  Name         : pt_pkt_free_decoder
+
+Archive member name at 2926: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_get_config
+  Type         : code
+  Name type    : no prefix
+  Hint         : 32
+  Name         : pt_pkt_get_config
+
+Archive member name at 2994: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_get_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 33
+  Name         : pt_pkt_get_offset
+
+Archive member name at 2A02: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      37 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000023
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_get_sync_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 34
+  Name         : pt_pkt_get_sync_offset
+
+Archive member name at 2A76: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2C size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000018
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_next
+  Type         : code
+  Name type    : no prefix
+  Hint         : 35
+  Name         : pt_pkt_next
+
+Archive member name at 2ADE: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_sync_backward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 36
+  Name         : pt_pkt_sync_backward
+
+Archive member name at 2B50: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      34 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000020
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_sync_forward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 37
+  Name         : pt_pkt_sync_forward
+
+Archive member name at 2BC0: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      30 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001C
+  DLL name     : libipt.dll
+  Symbol name  : _pt_pkt_sync_set
+  Type         : code
+  Name type    : no prefix
+  Hint         : 38
+  Name         : pt_pkt_sync_set
+
+Archive member name at 2C2C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_alloc_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 39
+  Name         : pt_qry_alloc_decoder
+
+Archive member name at 2C9E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      33 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001F
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_cond_branch
+  Type         : code
+  Name type    : no prefix
+  Hint         : 40
+  Name         : pt_qry_cond_branch
+
+Archive member name at 2D0E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      36 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000022
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_core_bus_ratio
+  Type         : code
+  Name type    : no prefix
+  Hint         : 41
+  Name         : pt_qry_core_bus_ratio
+
+Archive member name at 2D80: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2D size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000019
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_event
+  Type         : code
+  Name type    : no prefix
+  Hint         : 42
+  Name         : pt_qry_event
+
+Archive member name at 2DEA: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      34 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000020
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_free_decoder
+  Type         : code
+  Name type    : no prefix
+  Hint         : 43
+  Name         : pt_qry_free_decoder
+
+Archive member name at 2E5A: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_get_config
+  Type         : code
+  Name type    : no prefix
+  Hint         : 44
+  Name         : pt_qry_get_config
+
+Archive member name at 2EC8: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      32 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001E
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_get_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 45
+  Name         : pt_qry_get_offset
+
+Archive member name at 2F36: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      37 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000023
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_get_sync_offset
+  Type         : code
+  Name type    : no prefix
+  Hint         : 46
+  Name         : pt_qry_get_sync_offset
+
+Archive member name at 2FAA: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      37 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000023
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_indirect_branch
+  Type         : code
+  Name type    : no prefix
+  Hint         : 47
+  Name         : pt_qry_indirect_branch
+
+Archive member name at 301E: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      35 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000021
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_sync_backward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 48
+  Name         : pt_qry_sync_backward
+
+Archive member name at 3090: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      34 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000020
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_sync_forward
+  Type         : code
+  Name type    : no prefix
+  Hint         : 49
+  Name         : pt_qry_sync_forward
+
+Archive member name at 3100: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      30 size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 0000001C
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_sync_set
+  Type         : code
+  Name type    : no prefix
+  Hint         : 50
+  Name         : pt_qry_sync_set
+
+Archive member name at 316C: libipt.dll/     
+576C57B6 time/date Thu Jun 23 22:42:14 2016
+         uid
+         gid
+       0 mode
+      2C size
+correct header end
+
+  Version      : 0
+  Machine      : 14C (x86)
+  TimeDateStamp: 576C57B6 Thu Jun 23 22:42:14 2016
+  SizeOfData   : 00000018
+  DLL name     : libipt.dll
+  Symbol name  : _pt_qry_time
+  Type         : code
+  Name type    : no prefix
+  Hint         : 51
+  Name         : pt_qry_time
+
+     Exports
+
+       ordinal    name
+
+                  _pt_alloc_encoder
+                  _pt_cpu_errata
+                  _pt_enc_get_config
+                  _pt_enc_get_offset
+                  _pt_enc_next
+                  _pt_enc_sync_set
+                  _pt_errstr
+                  _pt_free_encoder
+                  _pt_image_add_file
+                  _pt_image_alloc
+                  _pt_image_copy
+                  _pt_image_free
+                  _pt_image_name
+                  _pt_image_remove_by_asid
+                  _pt_image_remove_by_filename
+                  _pt_image_set_callback
+                  _pt_insn_alloc_decoder
+                  _pt_insn_core_bus_ratio
+                  _pt_insn_free_decoder
+                  _pt_insn_get_config
+                  _pt_insn_get_image
+                  _pt_insn_get_offset
+                  _pt_insn_get_sync_offset
+                  _pt_insn_next
+                  _pt_insn_set_image
+                  _pt_insn_sync_backward
+                  _pt_insn_sync_forward
+                  _pt_insn_sync_set
+                  _pt_insn_time
+                  _pt_library_version
+                  _pt_pkt_alloc_decoder
+                  _pt_pkt_free_decoder
+                  _pt_pkt_get_config
+                  _pt_pkt_get_offset
+                  _pt_pkt_get_sync_offset
+                  _pt_pkt_next
+                  _pt_pkt_sync_backward
+                  _pt_pkt_sync_forward
+                  _pt_pkt_sync_set
+                  _pt_qry_alloc_decoder
+                  _pt_qry_cond_branch
+                  _pt_qry_core_bus_ratio
+                  _pt_qry_event
+                  _pt_qry_free_decoder
+                  _pt_qry_get_config
+                  _pt_qry_get_offset
+                  _pt_qry_get_sync_offset
+                  _pt_qry_indirect_branch
+                  _pt_qry_sync_backward
+                  _pt_qry_sync_forward
+                  _pt_qry_sync_set
+                  _pt_qry_time
+
+  Summary
+
+          C0 .debug$S
+          14 .idata$2
+          14 .idata$3
+           4 .idata$4
+           4 .idata$5
+           C .idata$6
