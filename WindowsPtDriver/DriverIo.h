@@ -29,10 +29,10 @@ struct PT_TRACE_IP_FILTERING {
 };
 
 typedef struct _PT_USER_REQ {
-	DWORD dwProcessId;						// The target process ID (0 means ALL)
-	DWORD dwCpuId;							// Target processor ID (-1 means ALL processors)
+	KAFFINITY kCpuAffinity;					// The target CPUs affinity mask
 	DWORD dwTraceSize;						// Trace buffer size 
 	DWORD dwOptsMask;						// The trace options bitmask
+	DWORD dwProcessId;						// The target process ID (0 means ALL)
 	PT_TRACE_IP_FILTERING IpFiltering;		// The IP ranges that we would like to trace (if any)
 	BOOLEAN bTraceUser;						// TRUE if tracing User mode 
 	BOOLEAN bTraceKernel;					// TRUE if tracing Kernel mode 
@@ -55,6 +55,16 @@ typedef struct _PT_TRACE_DETAILS {
 	PT_TRACE_STATE dwCurrentTraceState;		// The current tracing state
 } PT_TRACE_DETAILS, *PPT_TRACE_DETAILS;
 
+// The PMI User-mode callback routine
+typedef VOID(*PMI_USER_CALLBACK_ROUTINE) (DWORD dwCpuId, PVOID lpBuffer, QWORD qwBufferSize);
+
+// The PMI user-mode callback data structure
+typedef struct _PT_PMI_USER_CALLBACK {
+	KAFFINITY kCpuAffinity;					// The CPU affinity mask in which to execute this Callback
+	PMI_USER_CALLBACK_ROUTINE lpAddress;	// User-mode address
+	DWORD dwThrId;							// Thread ID in which to execute this callback
+}PT_PMI_USER_CALLBACK, *PPT_PMI_USER_CALLBACK;
+
 #ifndef WIN32
 // Driver generic pass-through routine
 NTSTATUS DevicePassThrough(PDEVICE_OBJECT pDevObj, PIRP pIrp);
@@ -68,6 +78,16 @@ NTSTATUS DeviceClose(PDEVICE_OBJECT pDevObj, PIRP pIrp);
 
 // Driver unsupported routine
 NTSTATUS DeviceUnsupported(PDEVICE_OBJECT pDevObj, PIRP pIrp);
+
+// Allocate the PT buffer for one or more CPUs and map to the current process
+NTSTATUS AllocateCpuUserBuffers(KAFFINITY cpuAffinity, DWORD dwSize, LPVOID * lppBuffArray, DWORD * lpdwArraySize, BOOLEAN bUseToPA);
+
+// Free the PT buffer of the specified CPUs
+NTSTATUS FreeCpuUserBuffers(KAFFINITY cpuAffinity);
+
+// Search a PMI User-mode Callback entry and optionally remove it
+PMI_USER_CALLBACK_DESC * SearchCallbackEntry(LPVOID lpAddress, DWORD dwThrId, BOOLEAN bRemove = FALSE);
+
 #else
 #include <WinIoCtl.h>
 /*
@@ -96,6 +116,12 @@ NTSTATUS DeviceUnsupported(PDEVICE_OBJECT pDevObj, PIRP pIrp);
 
 // Check the support for current processor and get the capabilities list
 #define IOCTL_PTDRV_CHECKSUPPORT CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA01, METHOD_BUFFERED, FILE_READ_DATA)
+
+// Allocate and return the buffer for one or more processors
+#define IOCTL_PTDRV_ALLOC_BUFFERS CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA0D, METHOD_BUFFERED, FILE_EXECUTE)
+// Free and cleanup the PT buffer for one or more processors
+#define IOCTL_PTDRV_FREE_BUFFERS CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA0F, METHOD_BUFFERED, FILE_EXECUTE)
+
 // Start a particular process trace
 #define IOCTL_PTDRV_START_TRACE CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA03, METHOD_BUFFERED, FILE_EXECUTE)
 // Pause a process trace (needed to reliably read a TRACE)
@@ -106,3 +132,9 @@ NTSTATUS DeviceUnsupported(PDEVICE_OBJECT pDevObj, PIRP pIrp);
 #define IOCTL_PTDRV_CLEAR_TRACE CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA09, METHOD_BUFFERED, FILE_EXECUTE)
 // Get the TRACE details (like total number of packets and so on)
 #define IOCTL_PTDR_GET_TRACE_DETAILS CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA0B, METHOD_BUFFERED, FILE_READ_DATA | FILE_EXECUTE)
+
+// Register a user-mode Callback routine for the PMI interrupt
+#define IOCTL_PTDRV_REGISTER_PMI_ROUTINE CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA12, METHOD_BUFFERED, FILE_WRITE_DATA)
+// Remove a user-mode callback routine for the PMI interrupt
+#define IOCTL_PTDRV_FREE_PMI_ROUTINE CTL_CODE(FILE_DEVICE_UNKNOWN, 0xA14, METHOD_BUFFERED, FILE_WRITE_DATA)
+

@@ -17,6 +17,10 @@
 
 extern "C" NTSTATUS ZwQuerySystemInformation(DWORD SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
 
+// NTSTATUS to Win32 error and viceversa
+extern "C" ULONG RtlNtStatusToDosError(NTSTATUS Status);
+extern "C" DWORD LsaNtStatusToWinError(NTSTATUS Status);
+
 typedef struct _SYSTEM_MODULE_INFORMATION { // Information Class 11
 	PVOID Reserved[2];						// + 0x00
 	PVOID Base;								// + 0x10

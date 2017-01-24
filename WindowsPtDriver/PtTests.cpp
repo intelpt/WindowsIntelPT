@@ -30,7 +30,6 @@ int DriverExcFilter(DWORD excCode, struct _EXCEPTION_POINTERS *ep, LPTSTR lpDrvF
 	NTSTATUS ntStatus = 0;
 	PT_TRACE_DESC ptDesc = { 0 };
 	SYSTEM_MODULE_INFORMATION sysModInfo = { 0 };
-	UNREFERENCED_PARAMETER(excCode);
 	
 	// Search the actual loaded module
 	ntStatus = GetKernelModule(lpDrvFileName, &sysModInfo);

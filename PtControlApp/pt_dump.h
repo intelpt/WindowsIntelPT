@@ -47,6 +47,8 @@ struct ptdump_options {
 	uint32_t no_cyc : 1;
 	/* Don't PGE PGD packets. */
 	uint32_t no_pge_pgd : 1;
+	/* Don't show Paging Information Packets */
+	uint32_t no_pip : 1;
 	/* The offset DELTA value */
 	uint64_t offset_delta;
 	/* HANDLE to the target text file (if one)*/
@@ -114,6 +116,6 @@ int load_pt(struct pt_config *config, char *arg, const char *prog);
 int pt_dump(const struct pt_config *config, const struct ptdump_options *options);
 
 
-// DEFAULT binary dump 
+// AaLl86 DEFAULT binary dump 
 BOOL pt_dump_file(LPTSTR lpInputFile, LPTSTR lpOutFile, DWORD dwMaxSize = 0);
-BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta = 0ull);
+BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta = 0ull, BOOLEAN bTraceOnlyKernel = FALSE);

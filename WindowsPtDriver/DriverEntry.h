@@ -18,6 +18,7 @@ typedef struct _DRIVER_GLOBAL_DATA {
 	BOOLEAN bPtSupported;								// TRUE if Intel PT is supported
 	BOOLEAN bPmiInstalled;								// TRUE if I have correctly installed the PMI Handler routine
 	BOOLEAN bCpuX2ApicMode;								// TRUE if the system processors are in x2Apic Mode
+	BOOLEAN bManualAllocBuff;							// TRUE if the PT buffer has been MANUALLY allocated from User Mode
 	DWORD dwNumProcs;									// The number of the system processors
 	PDEVICE_OBJECT pMainDev;							// The main device object 
 	PMIHANDLER pOldPmiHandler;							// The OLD PMI handler routine (if any)
@@ -26,7 +27,10 @@ typedef struct _DRIVER_GLOBAL_DATA {
 	HANDLE hPmiEvent;									// The PMI event kernel handle
 	DWORD * lpApicBase;									// The APIC I/O memory VA
 	LVT_Entry pmiVectDesc;								// The starting PMI LVT Vector descriptor
-	INTELPT_PMI_HANDLER pCustomPmiIsr;					// The registered custom PMI Isr routine (if any)
+	INTELPT_PMI_HANDLER pCustomPmiIsr;					// The registered custom Kernel-Mode PMI Isr routine (if any)
+	KAFFINITY kLastCpuAffinity;							// The last trace CPU affinity (used only in user-mode tracing)
+	LIST_ENTRY userCallbackList;						// The user callback descriptor list
+	KSPIN_LOCK userCallbackListLock;					// The user callback descriptor list spinlock
 	PER_PROCESSOR_PT_DATA procData[ANYSIZE_ARRAY];		// An array of PER_PROCESSOR_PT_DATA structure (1 per processor)
 	// INTEL_PT_CAPABILITIES ptCapabilities;			// The Intel Processor Trace capabilities (moved to intelpt.h)
 	// PKINTERRUPT pkPmiInterrupt = NULL;				// The PMI Interrupt Object (moved to intelpt.h)
@@ -44,6 +48,8 @@ NTSTATUS CreateSharedPmiEvent(LPTSTR lpEvtName);
 
 // The Inter-processor DPC type
 enum DPC_TYPE {
+	DPC_TYPE_ALLOC_BUFF,
+	DPC_TYPE_FREE_BUFF,
 	DPC_TYPE_START_PT,
 	DPC_TYPE_PAUSE_PT,
 	DPC_TYPE_CLEAR_PT

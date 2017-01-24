@@ -51,18 +51,21 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegPath)
 	ntStatus = CheckIntelPtSupport(&ptCap);
 	if (!NT_SUCCESS(ntStatus)) 
 	{
-		DbgPrint("[WindowsPtDriver] Intel Processor Trace is not supported on this system. Exiting...\r\n");
+		DbgPrint("[" DRV_NAME "] Intel Processor Trace is not supported on this system. Exiting...\r\n");
 		RevertToDefaultDbgSettings();
 		ExFreePool(g_pDrvData);
 		return ntStatus;
 	}
 	if (ptCap.numOfAddrRanges < 4) {
-		DbgPrint("[WindowsPtDriver] Info: The processor %i supports maximum of %i IP ranges.\r\n", KeGetCurrentProcessorNumber(), ptCap.numOfAddrRanges);
+		DbgPrint("[" DRV_NAME "] Info: The processor %i supports maximum of %i IP ranges.\r\n", KeGetCurrentProcessorNumber(), ptCap.numOfAddrRanges);
 	}
 
 	// Create a Pmi Event name and register the PMI interrupt
 	CreateSharedPmiEvent(INTEL_PT_PMI_EVENT_NAME);
 	RegisterPmiInterrupt();
+	// Initialize the user-mode callbacks list 
+	InitializeListHead(&g_pDrvData->userCallbackList);
+	KeInitializeSpinLock(&g_pDrvData->userCallbackListLock);
 
 	// Build the controller device
 	RtlInitUnicodeString(&devNameString, g_lpDevName);
@@ -173,7 +176,7 @@ VOID UnloadPtDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SystemArgument1
 
 	dwCurProc = KeGetCurrentProcessorNumber();
 
-	DbgPrint("[WindowsPtDriver] Stopping and unloading the Trace for CPU #%i...\r\n", dwCurProc);
+	DbgPrint("[" DRV_NAME "] Stopping and unloading the Trace for CPU #%i...\r\n", dwCurProc);
 	ntStatus = StopAndDisablePt();
 	ntStatus = FreeCpuResources(dwCurProc);
 
@@ -193,6 +196,7 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 	UNICODE_STRING dosDevNameString = { 0 };
 	ULONG dwCurProc = 0;
 	KDPC unloadDpc = { 0 };
+	KIRQL kIrql = KeGetCurrentIrql();
 
 	dwCurProc = KeGetCurrentProcessorNumber();
 	for (DWORD i = 0; i < g_pDrvData->dwNumProcs; i++) 
@@ -216,6 +220,9 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 
 		KeWaitForSingleObject(&kUnloadEvent, Executive, KernelMode, FALSE, NULL);
 	}
+
+	// Unload each registered User-mode PMI Callback
+	ClearAndFreePmiCallbackList();
 
 	// Unload the device object and the Symbolic Link
 	if (g_pDrvData->pMainDev) 
@@ -242,6 +249,6 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 	if (g_pDrvData) 
 		ExFreePool(g_pDrvData);
 
-	DbgPrint("[WindowsPtDriver] driver successfully unloaded.");
+	DbgPrint("[" DRV_NAME "] driver successfully unloaded.");
 	RevertToDefaultDbgSettings();
 }
