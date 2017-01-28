@@ -226,8 +226,7 @@ int NoCmdlineStartup()
 			// Do the special Kernel-mode test of AaLl86
 			if ((answer[0] | 0x20) == L'y') {
 				DoKernelTrace(hPtDev, PT_USER_REQ(), procPath);
-				CloseHandle(hPtDev);
-				return 0;
+				goto CloseTrace;
 			}
 		}
 		#endif
@@ -324,6 +323,7 @@ int NoCmdlineStartup()
 	}
 
 	// Set the event and wait for all PMI thread to exit
+CloseTrace:
 	SetEvent(g_appData.hExitEvt);
 	for (int i = 0; i < (int)dwCpusCount; i++) {
 		WaitForSingleObject(pCpuDescArray[i].hPmiThread, INFINITE);
@@ -331,9 +331,6 @@ int NoCmdlineStartup()
 		pCpuDescArray[i].hPmiThread = NULL;
 		pCpuDescArray[i].dwPmiThrId = 0;
 	}
-	
-	// Stop the Tracing (and clear the buffer if not manually allocated)
-	bRetVal = DeviceIoControl(hPtDev, IOCTL_PTDRV_CLEAR_TRACE, (LPVOID)&cpuAffinity, sizeof(cpuAffinity), NULL, 0, &dwBytesIo, NULL);
 	#pragma endregion
 
 	#pragma region 9. Optional - Get the results of our tracing (like the number of written packets)
@@ -360,6 +357,9 @@ int NoCmdlineStartup()
 	#pragma endregion
 
 	#pragma region 10. Free the resources and close each files
+	// Stop the Tracing (and clear the buffer if not manually allocated)
+	bRetVal = DeviceIoControl(hPtDev, IOCTL_PTDRV_CLEAR_TRACE, (LPVOID)&cpuAffinity, sizeof(cpuAffinity), NULL, 0, &dwBytesIo, NULL);
+
 	CloseHandle(pi.hProcess); 
 	CloseHandle(pi.hThread);
 	FreePerCpuData(bDeleteFiles);

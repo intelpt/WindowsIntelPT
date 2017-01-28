@@ -19,7 +19,7 @@ int wmain(int argc, LPTSTR argv[])
 {
 	int iRetVal = 0;
 	wprintf(L"Talos Intel PT Test Application\r\n");
-	wprintf(L"Version 0.4\r\n\r\n");
+	wprintf(L"Version 0.5\r\n\r\n");
 
 	if (!ParseCommandLine(argc, argv)) {
 		iRetVal = NoCmdlineStartup();
