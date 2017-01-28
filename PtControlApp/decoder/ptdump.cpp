@@ -929,6 +929,8 @@ static int print_packet(struct ptdump_buffer *buffer, uint64_t offset,
 		print_field(buffer->tracking.id, "cr3");
 		print_field(buffer->tracking.payload, "%016" PRIx64,
 			    packet->payload.pip.cr3);
+		if (options->no_pip)
+			buffer->skip = 1;
 		return 0;
 
 	case ppt_vmcs:
@@ -1227,7 +1229,7 @@ BOOL pt_dump_file(LPTSTR lpInputFile, LPTSTR lpOutFile, DWORD dwMaxSize) {
 	return bRetVal;
 }
 
-BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta) {
+BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta, BOOLEAN bTraceOnlyKernel) {
 	ptdump_options options = { 0 };
 	pt_config config = { 0 };
 
@@ -1241,6 +1243,7 @@ BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta) {
 	options.show_offset = 1;
 	options.show_time_as_delta = 1;
 	options.no_pge_pgd = 0;
+	options.no_pip = (bTraceOnlyKernel != FALSE) ? 1 : 0;
 	options.offset_delta = delta;
 	if (hOutFile)
 		options.hTargetFile = hOutFile;

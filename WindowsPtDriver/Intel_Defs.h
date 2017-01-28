@@ -2,9 +2,9 @@
  *  Windows Intel Processor Trace (PT) Driver
  *  Filename: Intel_Defs.h
  *  Intel Processor Trace definitions and data structures
- *  Last revision: 01/06/2016
+ *  Last revision: 01/24/2017
  *
- *  Copyright© 2016 Andrea Allievi, Richard Johnson
+ *  Copyright© 2017 Andrea Allievi, Richard Johnson
  *  TALOS Research and Intelligence Group and Microsoft Ltd
  *  All right reserved
  **********************************************************************/

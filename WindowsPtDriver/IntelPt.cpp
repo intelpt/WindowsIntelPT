@@ -13,6 +13,7 @@
 #include "IntelPt.h"
 #include "Debug.h"
 #include "UndocNt.h"
+#include "IntelPtXSave.h"
 #include <intrin.h>
 
 #define DirectoryTableBaseOffset 0x28
@@ -101,15 +102,15 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		targetCr3 = ((ULONG_PTR *)desc.peProc)[5];
 		// Check the found target CR3 (it should have the last 12 bits set to 0, due to the PFN standard)
 		if ((targetCr3 & 0xFFF) != 0) return STATUS_INVALID_ADDRESS;
-		DrvDbgPrint("[WindowsPtDriver] Starting Intel Processor Trace for processor %i. Target CR3: 0x%llX\r\n", curProcId, targetCr3);
+		DrvDbgPrint("[" DRV_NAME "] Starting Intel Processor Trace for processor %i. Target CR3: 0x%llX\r\n", curProcId, targetCr3);
 	}
 	else if (desc.bTraceKernel)
-		DrvDbgPrint("[WindowsPtDriver] Starting Intel Processor Trace for processor %i. Tracing Kernel address space...\r\n", curProcId);
+		DrvDbgPrint("[" DRV_NAME "] Starting Intel Processor Trace for processor %i. Tracing Kernel address space...\r\n", curProcId);
 	else 
-		DrvDbgPrint("[WindowsPtDriver] Starting Intel Processor Trace for processor %i. Tracing all user mode processes.\r\n", curProcId);
+		DrvDbgPrint("[" DRV_NAME "] Starting Intel Processor Trace for processor %i. Tracing all user mode processes.\r\n", curProcId);
 
 	if (desc.dwNumOfRanges > 0)
-		DrvDbgPrint("[WindowsPtDriver] Enabled %i filtering windows. IP range 1. Start VA: 0x%llX, Size 0x%08X\r\n ", 
+		DrvDbgPrint("[" DRV_NAME "] Enabled %i filtering windows. IP range 1. Start VA: 0x%llX, Size 0x%08X\r\n ",
 			desc.dwNumOfRanges, (LPVOID)desc.Ranges[0].lpStartVa, (LPVOID)((DWORD)((QWORD)desc.Ranges[0].lpEndVa - (QWORD)desc.Ranges[0].lpStartVa)));
 
 	// Check if the passed data structure that describe the buffer is valid
@@ -257,7 +258,7 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		KeLowerIrql(kOldIrql);
 
 	if (rtitStatusDesc.Fields.TriggerEn) {
-		DbgPrint("[WindowsPtDriver] Successfully enabled Intel PT tracing for processor %i. Log Virtual Address: 0x%llX. :-)\r\n",
+		DbgPrint("[" DRV_NAME "] Successfully enabled Intel PT tracing for processor %i. Log Virtual Address: 0x%llX. :-)\r\n",
 			curProcId, pPtBuffDesc->bUseTopa ? pPtBuffDesc->u.ToPA.lpTopaVa : pPtBuffDesc->u.Simple.lpTraceBuffVa);
 		lpProcPtData->curState = PT_PROCESSOR_STATE_TRACING;
 		// Set the PT buffer as current
@@ -266,7 +267,7 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 	}
 	else
 	{
-		DbgPrint("[WindowsPtDriver] Error: unable to successfully enable Intel PT tracing for processor %i.", curProcId);
+		DbgPrint("[" DRV_NAME "] Error: unable to successfully enable Intel PT tracing for processor %i.", curProcId);
 		//__writemsr(MSR_IA32_RTIT_STATUS, 0);
 		lpProcPtData->curState = PT_PROCESSOR_STATE_ERROR;
 		lpProcPtData->lpTargetProc = NULL;
@@ -298,9 +299,9 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, QWORD qwBuffSize)
 	if (!cpuPtData.pPtBuffDesc || !cpuPtData.pPtBuffDesc->qwBuffSize || cpuPtData.pPtBuffDesc->qwBuffSize != qwBuffSize)
 	{
 		BOOLEAN bUseTopa = (cpuPtData.TraceOptions.Fields.bUseTopa == 1);
-		ntStatus = AllocCpuPtBuffer(qwBuffSize, bUseTopa);
+		ntStatus = AllocCpuPtBuffer(dwCurCpu, qwBuffSize, bUseTopa);
 		if (!NT_SUCCESS(ntStatus)) {
-			DbgPrint("[WindowsPtDriver] Error: unable to allocate the trace buffer.\r\n");
+			DbgPrint("[" DRV_NAME "] Error: unable to allocate the trace buffer.\r\n");
 			cpuPtData.lpTargetProcCr3 = NULL;
 			cpuPtData.lpTargetProc = NULL;
 			return STATUS_INVALID_PARAMETER_2;
@@ -355,6 +356,8 @@ NTSTATUS PauseResumeTrace(BOOLEAN bPause)
 
 	dwCurCpu = KeGetCurrentProcessorNumber();
 	PER_PROCESSOR_PT_DATA & curCpuData = g_pDrvData->procData[dwCurCpu];
+	if (curCpuData.curState != PT_PROCESSOR_STATE_TRACING && bPause) return STATUS_SUCCESS;
+	if (curCpuData.curState != PT_PROCESSOR_STATE_PAUSED && bPause == FALSE) return STATUS_INVALID_DEVICE_REQUEST;
 
 	// Read the current state
 	rtitCtlDesc.All = __readmsr(MSR_IA32_RTIT_CTL);
@@ -443,6 +446,10 @@ NTSTATUS StopAndDisablePt()
 	ntStatus = CheckIntelPtSupport(&ptCap);
 	if (!NT_SUCCESS(ntStatus)) return ntStatus;
 
+	#ifdef ENABLE_EXPERIMENTAL_XSAVE
+	ntStatus = SavePtData((PXSAVE_AREA_EX)lpProcPtData->lpXSaveArea, lpProcPtData->dwXSaveAreaSize);
+	#endif
+
 	// Stop and disable the Intel PT
 	rtitCtlDesc.All = __readmsr(MSR_IA32_RTIT_CTL);
 	rtitCtlDesc.Fields.TraceEn = 0;
@@ -474,12 +481,14 @@ NTSTATUS StopAndDisablePt()
 	if (ptCap.bCr3Filtering)
 		__writemsr(MSR_IA32_RTIT_CR3_MATCH, 0);
 
+	// Set the new processor State
+	lpProcPtData->curState = PT_PROCESSOR_STATE_STOPPED;
+
 	lpProcPtData->lpTargetProcCr3 = NULL;
 	lpProcPtData->lpTargetProc = NULL;
 	lpProcPtData->dwNumOfActiveRanges = 0;
 	RtlZeroMemory(lpProcPtData->IpRanges, sizeof(lpProcPtData->IpRanges));
 
-	lpProcPtData->curState = PT_PROCESSOR_STATE_STOPPED;
 	return STATUS_SUCCESS;
 }
 
@@ -559,7 +568,6 @@ NTSTATUS SetDefaultTraceOptions(DWORD dwCpuId) {
 	lpProcPtData->TraceOptions.Fields.bInitialized = 1;
 	return STATUS_SUCCESS;
 }
-
 #pragma endregion
 
 #pragma region Trace Buffer memory management Code
@@ -573,17 +581,16 @@ NTSTATUS SetDefaultTraceOptions(DWORD dwCpuId) {
  * It's duty of the External module to decide what to do with the buffer descriptor.
  */
 
-// Allocate a Trace buffer for the current CPU
-NTSTATUS AllocCpuPtBuffer(QWORD qwSize, BOOLEAN bUseToPA) 
+// Allocate a Trace buffer for a specific CPU
+NTSTATUS AllocCpuPtBuffer(DWORD dwCpuId, QWORD qwSize, BOOLEAN bUseToPA)
 {
 	NTSTATUS ntStatus = STATUS_SUCCESS;						// Returned NTSTATUS value
-	ULONG dwCurCpu = 0;										// Current CPU number
 	INTEL_PT_CAPABILITIES ptCap = { 0 };					// Current processor capabilities
 	PT_BUFFER_DESCRIPTOR * pPtNewBuffDesc = NULL;			// The NEW Buffer descriptor
+	if (dwCpuId > KeQueryActiveProcessorCount(NULL)) return STATUS_INVALID_PARAMETER_3;
 
+	PER_PROCESSOR_PT_DATA & perCpuData = g_pDrvData->procData[dwCpuId];
 	ASSERT(KeGetCurrentIrql() <= DISPATCH_LEVEL);
-	dwCurCpu = KeGetCurrentProcessorNumber();
-	PER_PROCESSOR_PT_DATA & perCpuData = g_pDrvData->procData[dwCurCpu];
 
 	// Get this processor capabilities
 	ntStatus = CheckIntelPtSupport(&ptCap);
@@ -593,10 +600,11 @@ NTSTATUS AllocCpuPtBuffer(QWORD qwSize, BOOLEAN bUseToPA)
 		return STATUS_NOT_SUPPORTED;
 	if (!bUseToPA && !ptCap.bSingleRangeSupport)
 		return STATUS_NOT_SUPPORTED;
+	if (perCpuData.curState >= PT_PROCESSOR_STATE_TRACING) return STATUS_INVALID_DEVICE_REQUEST;
 
 	if (bUseToPA) {
 		if (perCpuData.pPtBuffDesc && perCpuData.pPtBuffDesc->u.ToPA.lpTopaPhysAddr)
-			ntStatus = FreeCpuResources(dwCurCpu);
+			ntStatus = FreeCpuResources(dwCpuId);
 		if (!NT_SUCCESS(ntStatus)) return ntStatus;
 		// Table of Physical Address usage
 		ntStatus = AllocAndSetTopa(&pPtNewBuffDesc, qwSize);
@@ -605,7 +613,7 @@ NTSTATUS AllocCpuPtBuffer(QWORD qwSize, BOOLEAN bUseToPA)
 			pPtNewBuffDesc->bDefaultPmiSet = TRUE;
 	} else 	{
 		if (perCpuData.pPtBuffDesc && perCpuData.pPtBuffDesc->u.Simple.lpTraceBuffVa)
-			ntStatus = FreeCpuResources(dwCurCpu);
+			ntStatus = FreeCpuResources(dwCpuId);
 		if (!NT_SUCCESS(ntStatus)) return ntStatus;
 		ntStatus = AllocPtBuffer(&pPtNewBuffDesc, qwSize, FALSE);
 	}
@@ -623,6 +631,7 @@ NTSTATUS AllocCpuPtBuffer(QWORD qwSize, BOOLEAN bUseToPA)
 NTSTATUS FreeCpuResources(DWORD dwCpuId) {
 	NTSTATUS ntStatus = STATUS_SUCCESS;
 	DWORD dwCurProcId = 0, dwTargetPid = 0;					// Current and target Process ID
+	BOOLEAN bExited = FALSE;								// True if the target process has already exited
 	KIRQL kIrql = KeGetCurrentIrql();
 	KAFFINITY curCpuAffinity = 0;
 	DWORD dwNumCpus = 0;
@@ -630,6 +639,7 @@ NTSTATUS FreeCpuResources(DWORD dwCpuId) {
 	dwNumCpus = KeQueryActiveProcessorCount(&curCpuAffinity);
 	if (dwCpuId >= dwNumCpus) return STATUS_INVALID_PARAMETER;
 	PER_PROCESSOR_PT_DATA & perCpuData = g_pDrvData->procData[dwCpuId];
+	if (perCpuData.curState >= PT_PROCESSOR_STATE_TRACING) return STATUS_INVALID_DEVICE_REQUEST;
 
 	// Very important: Check the user-mode process here:
 	if (perCpuData.lpUserVa) {
@@ -637,19 +647,22 @@ NTSTATUS FreeCpuResources(DWORD dwCpuId) {
 		if (perCpuData.lpMappedProc)
 			dwTargetPid = (DWORD)PsGetProcessId(perCpuData.lpMappedProc);
 
-		if ((!dwTargetPid || dwTargetPid == dwCurProcId) && kIrql <= APC_LEVEL) {
+		bExited = PsGetProcessExitProcessCalled(perCpuData.lpMappedProc);
+
+		if ((!dwTargetPid || (dwTargetPid == dwCurProcId) || bExited)  && kIrql <= APC_LEVEL) {
 			// We can safely unmap the PT buffer here
 			ntStatus = UnmapTraceBuffToUserVa(dwCpuId);
 			if (!NT_SUCCESS(ntStatus)) {
-				DbgPrint("[WindowsPtDriver] Error: Unable to unmap the trace buffer for process %i.\r\n", dwTargetPid);
+				DbgPrint("[" DRV_NAME "] Error: Unable to unmap the trace buffer for process %i.\r\n", dwTargetPid);
 				return ntStatus;
 			}
 		}
 		else {
-			DbgPrint("[WindowsPtDriver] Warning: Unable to free the the allocated physical memory for processor %i. The process with PID %i has still not unmapped the buffer. "
+			DbgPrint("[" DRV_NAME "] Warning: Unable to free the the allocated physical memory for processor %i. The process with PID %i has still not unmapped the buffer. "
 				"Base VA: 0x%llX, physical address: 0x%llX.\r\n", dwCpuId, dwTargetPid, perCpuData.lpUserVa, perCpuData.pPtBuffDesc ? perCpuData.pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr : 0);
 			return STATUS_CONTEXT_MISMATCH;
 		}
+		if (bExited) g_pDrvData->bManualAllocBuff = FALSE;
 	}
 
 	// Now finally release the buffer
@@ -803,6 +816,55 @@ NTSTATUS AllocAndSetTopa(PT_BUFFER_DESCRIPTOR ** lppBuffDesc, QWORD qwReqBuffSiz
 	}
 	return ntStatus;
 }
+
+// Get if the PT buffer is allocated and valid for a particular processor
+QWORD IsPtBufferAllocatedAndValid(DWORD dwCpuId, BOOLEAN bTestUserVa) {
+	PER_PROCESSOR_PT_DATA * pPerCpuData = NULL;
+	if (dwCpuId > KeQueryActiveProcessorCount(NULL)) return FALSE;
+	
+	pPerCpuData = &g_pDrvData->procData[dwCpuId];
+	if (bTestUserVa)
+		if (!pPerCpuData->lpUserVa) return 0;
+
+	if (!(pPerCpuData->pPtBuffDesc && pPerCpuData->pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr))
+		return 0;
+
+	// Return the size of the buffer
+	return pPerCpuData->pPtBuffDesc->qwBuffSize;
+}
+
+// Clear the PT buffer
+NTSTATUS ClearCpuPtBuffer(DWORD dwCpuId) {
+	PER_PROCESSOR_PT_DATA * pPerCpuData = NULL;
+	LPVOID lpKernelVa = NULL;							// The kernel VA
+	if (dwCpuId > KeQueryActiveProcessorCount(NULL)) return FALSE;
+	pPerCpuData = &g_pDrvData->procData[dwCpuId];
+
+	DbgBreak();
+	if (!pPerCpuData->pPtBuffDesc || !pPerCpuData->pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr)
+		return STATUS_NOT_FOUND;
+
+	if (!pPerCpuData->pPtBuffDesc->pTraceMdl)
+		return STATUS_INTERNAL_ERROR;
+
+	if (!pPerCpuData->pPtBuffDesc->lpKernelVa) {
+		// We do not want to map the MDL in Kernel Address space, try to use the User-mode VA
+		if (pPerCpuData->lpUserVa && PsGetCurrentProcess() == pPerCpuData->lpMappedProc) {
+			RtlZeroMemory(pPerCpuData->lpUserVa, (DWORD)pPerCpuData->pPtBuffDesc->qwBuffSize);
+			return STATUS_SUCCESS;
+		} else {
+			DrvDbgPrint("[" DRV_NAME "] Warning, the ClearCpuPtBuffer routine is re-mapping the PT buffer (size 0x%08X) for CPU %i in Kernel mode. "
+				"This could be very time consuming. Are you sure that is needed?\r\n", (DWORD)pPerCpuData->pPtBuffDesc->qwBuffSize, dwCpuId);
+			lpKernelVa = MmGetSystemAddressForMdlSafe(pPerCpuData->pPtBuffDesc->pTraceMdl, NormalPagePriority);
+			if (!lpKernelVa) return STATUS_INTERNAL_ERROR;
+			RtlZeroMemory(lpKernelVa, (DWORD)pPerCpuData->pPtBuffDesc->qwBuffSize);
+			MmUnmapLockedPages(lpKernelVa, pPerCpuData->pPtBuffDesc->pTraceMdl);
+		}
+	}
+	return STATUS_SUCCESS;
+
+}
+
 #pragma code_seg()
 
 // Map a physical page buffer to a User-mode process
@@ -924,7 +986,7 @@ NTSTATUS RegisterPmiInterrupt()
 
 		if (lpdwApicBase) 
 		{ 
-			DrvDbgPrint("[WindowsPtDriver] Successfully mapped the local APIC to 0x%llX.\r\n", lpdwApicBase);
+			DrvDbgPrint("[" DRV_NAME "] Successfully mapped the local APIC to 0x%llX.\r\n", lpdwApicBase);
 			g_pDrvData->lpApicBase = lpdwApicBase;
 		} else
 			return STATUS_NOT_SUPPORTED;
@@ -945,7 +1007,7 @@ NTSTATUS RegisterPmiInterrupt()
 	pNewPmiHandler = IntelPtPmiHandler;
 	ntStatus = HalSetSystemInformation(HalProfileSourceInterruptHandler, sizeof(PMIHANDLER), (LPVOID)&pNewPmiHandler);
 	if (NT_SUCCESS(ntStatus))  {
-		DrvDbgPrint("[WindowsPtDriver] Successfully registered system PMI handler to function 0x%llX.\r\n", (LPVOID)pNewPmiHandler);
+		DrvDbgPrint("[" DRV_NAME "] Successfully registered system PMI handler to function 0x%llX.\r\n", (LPVOID)pNewPmiHandler);
 		g_pDrvData->bPmiInstalled = TRUE;
 	}
 
@@ -1002,7 +1064,7 @@ VOID IntelPtPmiHandler(PKTRAP_FRAME pTrapFrame)
 	MSR_RTIT_STATUS_DESC traceStatusDesc = { 0 };
 	traceStatusDesc.All = __readmsr(MSR_IA32_RTIT_STATUS);
 	if (traceStatusDesc.Fields.Error)
-		DrvDbgPrint("[WindowsPtDriver] Warning: Intel PT Pmi has raised, but the PT Status register indicates an error!\r\n");
+		DrvDbgPrint("[" DRV_NAME "] Warning: Intel PT Pmi has raised, but the PT Status register indicates an error!\r\n");
 
 	if (ptBuffDesc && ptBuffDesc->bDefaultPmiSet) {
 		// Queue a DPC only if the Default PMI handler is set
@@ -1045,6 +1107,64 @@ VOID IntelPtPmiHandler(PKTRAP_FRAME pTrapFrame)
 	}
 };
 
+// The Kernel mode PMI callback APC
+VOID ApcKernelRoutine(PKAPC pApc, PKNORMAL_ROUTINE *NormalRoutine, PVOID *NormalContext, PVOID *SystemArgument1, PVOID *SystemArgument2) {
+	UNREFERENCED_PARAMETER(NormalRoutine);
+	UNREFERENCED_PARAMETER(NormalContext);
+	UNREFERENCED_PARAMETER(SystemArgument1);
+	UNREFERENCED_PARAMETER(SystemArgument2);
+	// ??? What to do here?? 
+	// Simple only free the APC structure
+	if (pApc) ExFreePool(pApc);
+}
+
+// Check and clean the dead PMI callbacks
+NTSTATUS CheckUserPmiCallbackList() {
+	KIRQL kOldIrql = KeGetCurrentIrql();
+	PLIST_ENTRY pNextEntry = NULL, pCurEntry = NULL;
+	if (IsListEmpty(&g_pDrvData->userCallbackList)) return STATUS_NOT_FOUND;
+
+	KeAcquireSpinLock(&g_pDrvData->userCallbackListLock, &kOldIrql);
+	pNextEntry = g_pDrvData->userCallbackList.Flink;
+	while (pNextEntry != &g_pDrvData->userCallbackList) {
+		PPMI_USER_CALLBACK_DESC pCurPmiDesc = NULL;
+		pCurEntry = pNextEntry;
+		pCurPmiDesc = CONTAINING_RECORD(pCurEntry, PMI_USER_CALLBACK_DESC, entry);
+		if (PsIsThreadTerminating(pCurPmiDesc->pTargetThread)) {
+			// Auto delete this damn entry
+			pNextEntry = pCurEntry->Flink;
+			RemoveEntryList(pCurEntry);
+			DrvDbgPrint("[" DRV_NAME "] Successfully removed dead user-mode PMI Callback (Thread ID: %i, Address: 0x%llX).\r\n",
+				PsGetThreadId(pCurPmiDesc->pTargetThread), pCurPmiDesc->lpUserAddress);
+			ObDereferenceObject(pCurPmiDesc->pTargetThread);
+			ExFreePool(pCurPmiDesc);
+			continue;
+		}
+		pNextEntry = pCurEntry->Flink;
+	}
+	KeReleaseSpinLock(&g_pDrvData->userCallbackListLock, kOldIrql);
+	return STATUS_SUCCESS;
+}
+
+// Clear the user PMI Callback list and free the memory
+NTSTATUS ClearAndFreePmiCallbackList() {
+	KIRQL kOldIrql = KeGetCurrentIrql();
+	PLIST_ENTRY pCurEntry = NULL;
+	PPMI_USER_CALLBACK_DESC pCurCallback = NULL;
+	if (IsListEmpty(&g_pDrvData->userCallbackList)) return  STATUS_NOT_FOUND;
+
+	KeAcquireSpinLock(&g_pDrvData->userCallbackListLock, &kOldIrql);
+	while (TRUE) {
+		pCurEntry = RemoveHeadList(&g_pDrvData->userCallbackList);
+		if (pCurEntry == &g_pDrvData->userCallbackList) break;
+		pCurCallback = CONTAINING_RECORD(pCurEntry, PMI_USER_CALLBACK_DESC, entry);
+		ObDereferenceObject(pCurCallback->pTargetThread);
+		ExFreePool(pCurCallback);
+	}
+	KeReleaseSpinLock(&g_pDrvData->userCallbackListLock, kOldIrql);
+	return STATUS_SUCCESS;
+}
+
 // The PMI DPC routine
 VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument1, PVOID SystemArgument2) 
 {
@@ -1053,6 +1173,7 @@ VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument
 	UNREFERENCED_PARAMETER(SystemArgument2);
 	DWORD dwCpuNum = KeGetCurrentProcessorNumber();			// This CPU number
 	ULONGLONG targetCr3 = 0ui64;							// The target CR3 register value
+	KIRQL kOldIrql = KeGetCurrentIrql();
 	
 	// A quick integrity check
 	ASSERT(dwCpuNum == (DWORD)SystemArgument1);
@@ -1076,8 +1197,40 @@ VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument
 	}
 
 	// Set the Buffer full Event (if any)
-	if (g_pDrvData->pPmiEvent) 
+	if (g_pDrvData->pPmiEvent)
 		KeSetEvent(g_pDrvData->pPmiEvent, IO_NO_INCREMENT, FALSE);
+
+	// Queue the User-mode APC and call the User-mode Callbacks
+	if (!IsListEmpty(&g_pDrvData->userCallbackList)) {
+		PLIST_ENTRY pNextEntry = NULL,				// Next entry
+			pCurEntry = NULL;						// Current entry
+		PRKAPC pkApc = NULL;
+		
+		KeAcquireSpinLock(&g_pDrvData->userCallbackListLock, &kOldIrql);
+		pNextEntry = g_pDrvData->userCallbackList.Flink;
+		while (pNextEntry != &g_pDrvData->userCallbackList) {
+			PPMI_USER_CALLBACK_DESC pCurPmiDesc = NULL;
+			pCurEntry = pNextEntry;
+			pCurPmiDesc = CONTAINING_RECORD(pCurEntry, PMI_USER_CALLBACK_DESC, entry);
+			if ((1i64 << dwCpuNum) & pCurPmiDesc->kAffinity) {
+				// Found a valid User-mode callback, verify it and call it
+				if (PsIsThreadTerminating(pCurPmiDesc->pTargetThread)) {
+					// Auto delete this damn entry
+					pNextEntry = pCurEntry->Flink;
+					RemoveEntryList(pCurEntry);
+					ObDereferenceObject(pCurPmiDesc->pTargetThread);
+					ExFreePool(pCurPmiDesc);
+					continue;
+				}
+				pkApc = (PRKAPC)ExAllocatePoolWithTag(NonPagedPool, sizeof(KAPC), MEMTAG);
+				KeInitializeApc(pkApc, (PRKTHREAD)pCurPmiDesc->pTargetThread, CurrentApcEnvironment, &ApcKernelRoutine, NULL,
+					(PKNORMAL_ROUTINE)pCurPmiDesc->lpUserAddress, UserMode, (PVOID)dwCpuNum);
+				ASSERT(KeInsertQueueApc(pkApc, (LPVOID)curCpuData.lpUserVa, (LPVOID)curCpuData.pPtBuffDesc->qwBuffSize, IO_NO_INCREMENT));
+			}
+			pNextEntry = pCurEntry->Flink;
+		}
+		KeReleaseSpinLock(&g_pDrvData->userCallbackListLock, kOldIrql);
+	}
 
 	ExFreePool(pDpc);
 }
@@ -1097,7 +1250,7 @@ VOID IntelPmiWorkItem(PVOID Parameter)
 
 	ntStatus = PsSuspendProcess(pTargetProc);
 	if (NT_SUCCESS(ntStatus))
-		DrvDbgPrint("[WindowsPtDriver] Successfully suspended process ID: %i.\r\n", dwProcId);
+		DrvDbgPrint("[" DRV_NAME "] Successfully suspended process ID: %i.\r\n", dwProcId);
 
 	ExFreePool(pWorkItem);
 }

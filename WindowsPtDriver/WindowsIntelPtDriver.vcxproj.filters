@@ -19,6 +19,9 @@
     <ClCompile Include="PtTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IntelPtXSave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h">
@@ -48,6 +51,9 @@
     <ClInclude Include="UndocNt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IntelPtXSave.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -59,6 +65,9 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{4b959927-b2e1-4594-8fff-e51a0d8bfc8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assembly Files">
+      <UniqueIdentifier>{0d7a4089-f791-4f8d-b924-3adb4c817f29}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.md" />
@@ -68,5 +77,10 @@
     <ResourceCompile Include="WindowsIntelPtDriver.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="asm\Amd64XSave.asm">
+      <Filter>Assembly Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

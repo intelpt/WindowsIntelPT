@@ -89,11 +89,11 @@ typedef struct _PT_BUFFER_DESCRIPTOR {
 	BOOLEAN bBuffIsFull;							// + 0x12 - TRUE if the ToPa or Simple buffer is full
 	QWORD qwBuffSize;								// + 0x18 - The physical buffer size
 	PMDL pTraceMdl;									// + 0x20 - The MDL used for mapping pages
-	LPVOID lpKernelVa;								// + 0x28 - The kernel-mode virtual address 
+	LPVOID lpKernelVa;								// + 0x28 - The kernel-mode virtual address (never used, except for the tests)
 }PT_BUFFER_DESCRIPTOR, *PPT_BUFFER_DESCRIPTOR;
 
 // The custom PMI ISR routines
-typedef VOID(*INTELPT_PMI_HANDLER)(DWORD dwProcId, PT_BUFFER_DESCRIPTOR * ptBuffDesc);
+typedef VOID(*INTELPT_PMI_HANDLER)(DWORD dwCpuId, PT_BUFFER_DESCRIPTOR * ptBuffDesc);
 
 struct PER_PROCESSOR_PT_DATA {
 	PT_BUFFER_DESCRIPTOR * pPtBuffDesc;				// + 0x00 - The PT buffer descriptor associated to this CPU 
@@ -103,12 +103,23 @@ struct PER_PROCESSOR_PT_DATA {
 	PT_PROCESSOR_STATE curState;					// + 0x38 - Current processor state
 	ULONGLONG PacketByteCount;						// + 0x40 - The total number of TRACE packets acquired by this processor
 
+	LPVOID lpXSaveArea;								// + 0x48 - [Experimantal] - XSave Area ptr
+	DWORD dwXSaveAreaSize;							// + 0x50 - [Experimantal] - XSave area size for current processor
+
 	// Tracing state data:
-	PEPROCESS lpTargetProc;							// + 0x48 - The target process to monitor (NULL if All process are going to be traced)
-	ULONG_PTR lpTargetProcCr3;						// + 0x50 - The process to monitor CR3 (NULL if All process are going to be traced)
-	DWORD dwNumOfActiveRanges;						// + 0x58 - Number of active ranges
-	PT_TRACE_RANGE IpRanges[4];						// + 0x60
+	PEPROCESS lpTargetProc;							// + 0x58 - The target process to monitor (NULL if All process are going to be traced)
+	ULONG_PTR lpTargetProcCr3;						// + 0x60 - The process to monitor CR3 (NULL if All process are going to be traced)
+	DWORD dwNumOfActiveRanges;						// + 0x68 - Number of active ranges
+	PT_TRACE_RANGE IpRanges[4];						// + 0x70
 };
+
+// The user-mode PMI Callback descriptor
+typedef struct _PMI_USER_CALLBACK_DESC {
+	LIST_ENTRY entry;							// + 0x00 - The double linked list entry
+	PETHREAD pTargetThread;						// + 0x10 - The target thread
+	KAFFINITY kAffinity;						// + 0x18 - The target routine affinity mask
+	LPVOID lpUserAddress;						// + 0x20 - The user-mode callback address
+} PMI_USER_CALLBACK_DESC, *PPMI_USER_CALLBACK_DESC;
 
 // Define the number of trailing zeroes in a page aligned virtual address.
 // This is used as the shift count when shifting virtual addresses to
@@ -135,12 +146,16 @@ NTSTATUS MapTracePhysBuffToUserVa(DWORD dwCpuId);
 NTSTATUS UnmapTraceBuffToUserVa(DWORD dwCpuId);
 // Allocate a Trace buffer for the current CPU
 NTSTATUS AllocPtBuffer(PT_BUFFER_DESCRIPTOR ** lppBuffDesc, QWORD qwSize, BOOLEAN bUseTopa = TRUE);
-// Allocate a Trace buffer for the current CPU
-NTSTATUS AllocCpuPtBuffer(QWORD qwSize, BOOLEAN bUseToPA);
 // Free a PT trace buffer (use with caution, avoid BSOD please)
 NTSTATUS FreePtBuffer(PT_BUFFER_DESCRIPTOR * ptBuffDesc);
+// Allocate a Trace buffer for a specific CPU
+NTSTATUS AllocCpuPtBuffer(DWORD dwCpuId, QWORD qwSize, BOOLEAN bUseToPA);
 // Free the resources used by a CPU
 NTSTATUS FreeCpuResources(DWORD dwCpuId);
+// Get if the PT buffer is allocated and valid for a particular processor
+QWORD IsPtBufferAllocatedAndValid(DWORD dwCpuId, BOOLEAN bTestUserVa = FALSE);
+// Clear the PT buffer
+NTSTATUS ClearCpuPtBuffer(DWORD dwCpuId);
 // Get the active Trace options for a particular CPU
 NTSTATUS GetTraceOptions(DWORD dwCpuId, TRACE_OPTIONS * pOptions);
 // Set the trace options for a particular CPU
@@ -153,6 +168,10 @@ NTSTATUS AllocAndSetTopa(PT_BUFFER_DESCRIPTOR ** lppBuffDesc, QWORD qwReqBuffSiz
 NTSTATUS RegisterPmiInterrupt();
 // Deregister and remove the LVT PMI interrupt 
 NTSTATUS UnregisterPmiInterrupt();
+// Check and clean the dead PMI callbacks
+NTSTATUS CheckUserPmiCallbackList();
+// Clear the user PMI Callback list and free the memory
+NTSTATUS ClearAndFreePmiCallbackList();
 // The PMI LVT handler routine (Warning! This should run at very high IRQL)
 VOID IntelPtPmiHandler(PKTRAP_FRAME pTrapFrame);
 BOOLEAN PmiInterruptHandler(struct _KINTERRUPT *Interrupt, PVOID ServiceContext);

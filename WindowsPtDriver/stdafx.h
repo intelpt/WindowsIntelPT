@@ -12,6 +12,10 @@
 #include <ntddk.h>
 #include <wdmsec.h>
 
+// My driver name
+#define DRV_NAME "WindowsPtDriver"
+#define ENABLE_EXPERIMENTAL_XSAVE				1				// Enable the experimental XSAVE support
+
 // Common data types
 typedef unsigned char BYTE, *LPBYTE, *PBYTE;
 typedef unsigned long DWORD, UINT, *LPDWORD, *PDWORD;

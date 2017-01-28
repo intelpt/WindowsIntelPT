@@ -54,7 +54,7 @@ ULONG DrvDbgPrint(PCHAR Format, ...)
 PVOID DbgAllocateMemory(IN POOL_TYPE  PoolType, IN SIZE_T  NumberOfBytes, IN ULONG  Tag) 
 {
 	PVOID retBuff = ExAllocatePoolWithTag(PoolType, NumberOfBytes, Tag);
-	DbgPrint("[WindowsPtDriver] Allocated 0x%08X bytes at base address 0x%08X, Tag '%.04s', %s.\r\n", 
+	DbgPrint("[" DRV_NAME "] Allocated 0x%08X bytes at base address 0x%08X, Tag '%.04s', %s.\r\n", 
 		NumberOfBytes, (LPBYTE)retBuff, (LPSTR)&Tag, (PoolType == NonPagedPool ? "NonPaged Pool" : "Paged Pool"));
 	return retBuff;
 }
@@ -62,6 +62,6 @@ PVOID DbgAllocateMemory(IN POOL_TYPE  PoolType, IN SIZE_T  NumberOfBytes, IN ULO
 VOID DbgFreeMemory(PVOID pMem) 
 {
 	ExFreePool(pMem);
-	DbgPrint("[WindowsPtDriver] Deallocated memory at base address 0x%08X\r\n", (LPBYTE)pMem);
+	DbgPrint("[" DRV_NAME "] Deallocated memory at base address 0x%08X\r\n", (LPBYTE)pMem);
 }
 #pragma endregion

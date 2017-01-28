@@ -19,7 +19,7 @@ int wmain(int argc, LPTSTR argv[])
 {
 	int iRetVal = 0;
 	wprintf(L"Talos Intel PT Test Application\r\n");
-	wprintf(L"Version 0.4\r\n\r\n");
+	wprintf(L"Version 0.5\r\n\r\n");
 
 	if (!ParseCommandLine(argc, argv)) {
 		iRetVal = NoCmdlineStartup();
@@ -133,11 +133,11 @@ bool ParseCommandLine(int argc, LPTSTR argv[]) {
 		HANDLE hTxtDump = CreateFile(lpOutFile, FILE_WRITE_ACCESS, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hTxtDump == INVALID_HANDLE_VALUE) {
 			if (bNoOutFile) { delete[] lpOutFile; lpOutFile = NULL; }
-			cl_wprintf(RED, L"Error %i!\r\n", (LPVOID)(QWORD)GetLastError());
+			cl_wprintf(RED, L"Error %i!\r\n", (LPVOID)GetLastError());
 			return true;
 		}
 		CHAR fullLine[0x200] = { 0 }; DWORD dwBytesIo = 0;
-		sprintf_s(fullLine, COUNTOF(fullLine), "Intel PT Trace file. Version 0.4\r\n");
+		sprintf_s(fullLine, COUNTOF(fullLine), "AaLl86 Intel PT Trace file. Version 0.4\r\n");
 		WriteFile(hTxtDump, fullLine, (DWORD)strlen(fullLine), &dwBytesIo, NULL);
 		sprintf_s(fullLine, COUNTOF(fullLine), "Binary dump file name: %S\r\n", wcsrchr(lpPtBinFile, L'\\') + 1);
 		WriteFile(hTxtDump, fullLine, (DWORD)strlen(fullLine), &dwBytesIo, NULL);
