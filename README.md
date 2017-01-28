@@ -21,26 +21,21 @@ Primary benefits include:
 * Trace up to four arbitrary ranges of physical memory
 * Log to single physical address range 
 * Log to table of physical pages and map to virtual address range
+* Multi-core tracing support 
 
 **Build Instructions**
 
 * Open the included Visual Studio Project file in Visual Studio 2013 or 2015.
-* Open Project Properties, navigate to Driver Signing page, and enable set "Sign Mode" to "Test Signing" 
-* Under the Test Certificate drop down, select "Create Test Certificate"
 * Ensure build options are set to x64 Release and build
 
 **Driver Loading Instructions**
 
 * Ensure your CPU is Skylake architecture and you are running on native hardware (not a hypervisor)
 * Boot your Windows 8.1 or Windows 10 OS using boot options that allow loading test signed drivers 
-* Install the WindowsPtDriver using a tool such as InstDrv from the Windows RK (included in Build directory)
+* Install the WindowsPtDriver using `sc create intelpt BinPath=%cd%\WindowsPtDriver\x64\Release\WindowsPtDriver.sys`
 
 **Current Limitations**
  
-This driver currently supports tracing on only one CPU core at a time, traced processes must be launched 
-with processor affinity set in order to capture a full trace. This is a software limitation we will fix
-eventually, but is not a priority for our use case. Please open a bug if this feature is important to you. 
-
 All threads in a usermode process will log to a single buffer, making it difficult to determine accurate 
 execution per-thread. This something we are working to fix.
  
@@ -59,8 +54,7 @@ The driver currently executes a DbgBreak() on load if a kernel debugger is attac
 
 * Output sideband memory map information for post processing
 * Per-thread logging
-* Implement multi-core tracing 
 
 
   
-Last revision: 01/04/2017
+Last revision: 01/28/2017
