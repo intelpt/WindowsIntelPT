@@ -103,11 +103,14 @@ struct PER_PROCESSOR_PT_DATA {
 	PT_PROCESSOR_STATE curState;					// + 0x38 - Current processor state
 	ULONGLONG PacketByteCount;						// + 0x40 - The total number of TRACE packets acquired by this processor
 
+	LPVOID lpXSaveArea;								// + 0x48 - [Experimantal] - XSave Area ptr
+	DWORD dwXSaveAreaSize;							// + 0x50 - [Experimantal] - XSave area size for current processor
+
 	// Tracing state data:
-	PEPROCESS lpTargetProc;							// + 0x48 - The target process to monitor (NULL if All process are going to be traced)
-	ULONG_PTR lpTargetProcCr3;						// + 0x50 - The process to monitor CR3 (NULL if All process are going to be traced)
-	DWORD dwNumOfActiveRanges;						// + 0x58 - Number of active ranges
-	PT_TRACE_RANGE IpRanges[4];						// + 0x60
+	PEPROCESS lpTargetProc;							// + 0x58 - The target process to monitor (NULL if All process are going to be traced)
+	ULONG_PTR lpTargetProcCr3;						// + 0x60 - The process to monitor CR3 (NULL if All process are going to be traced)
+	DWORD dwNumOfActiveRanges;						// + 0x68 - Number of active ranges
+	PT_TRACE_RANGE IpRanges[4];						// + 0x70
 };
 
 // The user-mode PMI Callback descriptor

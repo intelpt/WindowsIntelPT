@@ -64,3 +64,6 @@ struct IPI_DPC_STRUCT {
 
 // DPC routine (needed to start/stop/pause the PT on a target CPU)
 VOID IoCpuIpiDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SystemArgument1, PVOID SystemArgument2);
+
+// Initialize each CPU XSave area (Experimental XSAVE support)
+NTSTATUS InitializeCpusXSaveArea();

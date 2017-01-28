@@ -13,6 +13,7 @@
 #include "DriverIo.h"
 #include "Debug.h"
 #include "UndocNt.h"
+#include "IntelPtXSave.h"
 
 const LPTSTR g_lpDevName = L"\\Device\\WindowsIntelPtDev";
 const LPTSTR g_lpDosDevName = L"\\DosDevices\\WindowsIntelPtDev";
@@ -59,6 +60,10 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegPath)
 	if (ptCap.numOfAddrRanges < 4) {
 		DbgPrint("[" DRV_NAME "] Info: The processor %i supports maximum of %i IP ranges.\r\n", KeGetCurrentProcessorNumber(), ptCap.numOfAddrRanges);
 	}
+
+	#ifdef ENABLE_EXPERIMENTAL_XSAVE
+	ntStatus = InitializeCpusXSaveArea();
+	#endif
 
 	// Create a Pmi Event name and register the PMI interrupt
 	CreateSharedPmiEvent(INTEL_PT_PMI_EVENT_NAME);
@@ -165,6 +170,43 @@ NTSTATUS CreateSharedPmiEvent(LPTSTR lpEvtName)
 	return ntStatus;
 }
 
+// Initialize each CPU XSave area (Experimental XSAVE support)
+NTSTATUS InitializeCpusXSaveArea() {
+	NTSTATUS ntStatus = STATUS_SUCCESS;					// Returned NTSTATUS value
+	KAFFINITY activeProcessorsMask = 0;					// The active processors mask
+	DWORD dwNumOfProcs = 0;								// Total number of processor in the system
+	DWORD dwAreaSize = 0;								// The maximum XSAVE area size
+	
+	// Get the total number of system processors
+	dwNumOfProcs = KeQueryActiveProcessorCount(&activeProcessorsMask);
+
+	// Check the XSAVE support for this processor (is enough)
+	ntStatus = CheckPtXSaveSupport(&dwAreaSize, NULL, NULL);
+	if (!NT_SUCCESS(ntStatus)) return ntStatus;
+
+	for (int i = 0; i < (int)dwNumOfProcs; i++) {
+		PER_PROCESSOR_PT_DATA & pCurCpuData = g_pDrvData->procData[i];
+		LPVOID lpBuff = NULL; 
+		DWORD dwBuffSize = 0;
+
+		if (dwAreaSize > PAGE_SIZE)
+			dwBuffSize = dwAreaSize;
+		else
+			// I should allocate a PAGE_SIZE buffer to obey at the 64-BYTE aligment requirement
+			dwBuffSize = 0x1000;
+
+		lpBuff = ExAllocatePoolWithTag(NonPagedPool, dwBuffSize, MEMTAG);
+		if (((ULONG_PTR)lpBuff & 0x00FF) != 0) {
+			// I am too lazy to use the MDL (see MmAllocatePagesForMdl)
+			return STATUS_INTERNAL_ERROR;
+		}
+		pCurCpuData.lpXSaveArea = lpBuff;
+		pCurCpuData.dwXSaveAreaSize = dwAreaSize;
+	}
+
+	return STATUS_SUCCESS;
+}
+
 VOID UnloadPtDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SystemArgument1, PVOID SystemArgument2) 
 {
 	UNREFERENCED_PARAMETER(Dpc);
@@ -196,7 +238,8 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 	UNICODE_STRING dosDevNameString = { 0 };
 	ULONG dwCurProc = 0;
 	KDPC unloadDpc = { 0 };
-	KIRQL kIrql = KeGetCurrentIrql();
+
+	PAGED_CODE();
 
 	dwCurProc = KeGetCurrentProcessorNumber();
 	for (DWORD i = 0; i < g_pDrvData->dwNumProcs; i++) 
@@ -219,6 +262,13 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 		KeInsertQueueDpc(&unloadDpc, NULL, NULL);
 
 		KeWaitForSingleObject(&kUnloadEvent, Executive, KernelMode, FALSE, NULL);
+
+		// Free the XSAVE area (if any)
+		if (procData->lpXSaveArea) {
+			ExFreePool(procData->lpXSaveArea);
+			procData->dwXSaveAreaSize = 0;
+			procData->lpXSaveArea = NULL;
+		}
 	}
 
 	// Unload each registered User-mode PMI Callback

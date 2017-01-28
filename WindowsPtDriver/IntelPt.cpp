@@ -13,6 +13,7 @@
 #include "IntelPt.h"
 #include "Debug.h"
 #include "UndocNt.h"
+#include "IntelPtXSave.h"
 #include <intrin.h>
 
 #define DirectoryTableBaseOffset 0x28
@@ -444,6 +445,10 @@ NTSTATUS StopAndDisablePt()
 
 	ntStatus = CheckIntelPtSupport(&ptCap);
 	if (!NT_SUCCESS(ntStatus)) return ntStatus;
+
+	#ifdef ENABLE_EXPERIMENTAL_XSAVE
+	ntStatus = SavePtData((PXSAVE_AREA_EX)lpProcPtData->lpXSaveArea, lpProcPtData->dwXSaveAreaSize);
+	#endif
 
 	// Stop and disable the Intel PT
 	rtitCtlDesc.All = __readmsr(MSR_IA32_RTIT_CTL);
@@ -1157,6 +1162,7 @@ NTSTATUS ClearAndFreePmiCallbackList() {
 		ExFreePool(pCurCallback);
 	}
 	KeReleaseSpinLock(&g_pDrvData->userCallbackListLock, kOldIrql);
+	return STATUS_SUCCESS;
 }
 
 // The PMI DPC routine

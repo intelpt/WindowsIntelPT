@@ -181,6 +181,7 @@ xcopy /y "$(OutDir)*.pdb" "%UNITNAME%\Build"</Command>
     <ClCompile Include="DriverEntry.cpp" />
     <ClCompile Include="DriverIo.cpp" />
     <ClCompile Include="IntelPt.cpp" />
+    <ClCompile Include="IntelPtXSave.cpp" />
     <ClCompile Include="KernelTracing.cpp" />
     <ClCompile Include="PtTests.cpp" />
   </ItemGroup>
@@ -189,6 +190,7 @@ xcopy /y "$(OutDir)*.pdb" "%UNITNAME%\Build"</Command>
     <ClInclude Include="DriverEntry.h" />
     <ClInclude Include="DriverIo.h" />
     <ClInclude Include="IntelPt.h" />
+    <ClInclude Include="IntelPtXSave.h" />
     <ClInclude Include="Intel_Defs.h" />
     <ClInclude Include="KernelTracing.h" />
     <ClInclude Include="resource.h" />
@@ -203,6 +205,14 @@ xcopy /y "$(OutDir)*.pdb" "%UNITNAME%\Build"</Command>
     <None Include="readme.md">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="asm\Amd64XSave.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </MASM>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

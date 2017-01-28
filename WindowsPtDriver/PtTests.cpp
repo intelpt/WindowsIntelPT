@@ -154,7 +154,7 @@ NTSTATUS DoDriverTraceTest(LPTSTR lpDrvFileName, LPTSTR lpDumpFile, DWORD dwBuff
 	InitializeObjectAttributes(&outFileOa, &outFileName, OBJ_KERNEL_HANDLE, NULL, NULL);
 	ntStatus = ZwCreateFile(&hOutFile, FILE_ALL_ACCESS, &outFileOa, &ioSb, NULL, FILE_ATTRIBUTE_NORMAL, 0, FILE_SUPERSEDE, FILE_NON_DIRECTORY_FILE, NULL, 0);
 	if (NT_SUCCESS(ntStatus)) {
-		ntStatus = ZwWriteFile(hOutFile, NULL, NULL, NULL, &ioSb, g_testData.pBuffDesc->lpKernelVa, g_testData.pBuffDesc->qwBuffSize, &fileOffset, NULL);
+		ntStatus = ZwWriteFile(hOutFile, NULL, NULL, NULL, &ioSb, g_testData.pBuffDesc->lpKernelVa, (DWORD)g_testData.pBuffDesc->qwBuffSize, &fileOffset, NULL);
 		ZwClose(hOutFile);
 	}
 

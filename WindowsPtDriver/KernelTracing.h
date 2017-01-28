@@ -11,10 +11,11 @@
 #pragma once
 
 #ifndef INTEL_PT_HDRS
-// Data structure that describe the trace type request
+ // Data structure that describe the trace type request
 struct PT_TRACE_DESC {
 	PEPROCESS peProc;						// Trace by CR3: The Process address space to trace (if any)
-	BOOL bTraceKernel;						// Trace by CPL: TRUE if tracing Kernel mode components
+	BOOLEAN bTraceKernel;					// Trace by CPL: TRUE to trace Kernel mode components
+	BOOLEAN bTraceUser;						// Trace by CPL: TRUE to trace User mode components
 	DWORD dwNumOfRanges;					// Trace by IP: Number of range to trace
 	struct PT_TRACE_RANGE Ranges[4];		// Trace by IP: the VA ranges to trace
 };
@@ -28,7 +29,8 @@ union TRACE_OPTIONS {
 		BOOLEAN bTraceBranchPcks : 1;				// [3] - Enables/disables COFI-based packets: FUP, TIP, TIP.PGE, TIP.PGD, TNT, MODE.Exec, MODE.TSX.		(default is 1)
 		BOOLEAN bUseTopa : 1;						// [4] - Enable/disable the usage of Table of Physical Address (if available, default is 1)
 		BOOLEAN bEnableRetCompression : 1;			// [5] - Enables/disables RET compression (default is 1)
-		BOOLEAN Reserved : 2;						// [6-7] - Reserved
+		BOOLEAN bInitialized : 1;					// [6] - Set to 1 if this structure is initialized
+		BOOLEAN Reserved : 1;						// [7] - Reserved
 		BYTE MTCFreq : 4;							// [8:11] - MTC packet Frequency, which is based on the core crystal clock, or Always Running Timer (ART)
 		BYTE CycThresh : 4;							// [12:15] - CYC packet threshold. CYC packets will be sent with the first eligible packet after N cycles have passed since the last CYC packet
 		BYTE PSBFreq : 4;							// [16:19] - The frequency of PSB packets. PSB packet frequency is based on the number of Intel PT packet bytes output
