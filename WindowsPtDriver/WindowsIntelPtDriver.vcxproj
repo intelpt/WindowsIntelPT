@@ -142,12 +142,8 @@
       <WarningLevel>Level4</WarningLevel>
     </ClCompile>
     <PostBuildEvent>
-      <Command>@echo off
-set UNITNAME=D:
-
-xcopy /y "$(ProjectDir)*.cpp" "%UNITNAME%\Build\Sources"
-xcopy /y "$(OutDir)*.sys" "%UNITNAME%\Build"
-xcopy /y "$(OutDir)*.pdb" "%UNITNAME%\Build"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <Link>
       <ModuleDefinitionFile>Export.def</ModuleDefinitionFile>

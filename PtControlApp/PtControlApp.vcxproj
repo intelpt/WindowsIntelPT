@@ -98,13 +98,8 @@
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>@echo off
-set REMOTE_IP=aall86-surfdbg
-set REMOTE_PATH=\C\IntelPt
-
-xcopy /y "$(OutDir)*.sys" "\\%REMOTE_IP%%REMOTE_PATH%"
-xcopy /y "$(OutDir)*.exe" "\\%REMOTE_IP%%REMOTE_PATH%"
-rem xcopy /y "$(OutDir)*.pdb" "\\%REMOTE_IP%%REMOTE_PATH%"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

@@ -707,9 +707,10 @@ NTSTATUS AllocPtBuffer(PT_BUFFER_DESCRIPTOR ** lppBuffDesc, QWORD qwSize, BOOLEA
 // Free a PT trace buffer (use with caution, avoid BSOD please)
 NTSTATUS FreePtBuffer(PT_BUFFER_DESCRIPTOR * ptBuffDesc) {
 	//ULONG dwCurCpu = 0;										// Current CPU number
+#ifdef _DEBUG
 	KIRQL kIrql = KeGetCurrentIrql();
 	ASSERT(kIrql <= DISPATCH_LEVEL);
-
+#endif
 	if (!ptBuffDesc) return STATUS_INVALID_PARAMETER;
 	if (ptBuffDesc->qwBuffSize < PAGE_SIZE) return STATUS_INVALID_BUFFER_SIZE;
 

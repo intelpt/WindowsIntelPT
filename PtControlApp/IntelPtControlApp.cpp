@@ -162,7 +162,7 @@ int NoCmdlineStartup()
 		HANDLE hNewThr = NULL;
 		DWORD newThrId = 0;
 
-		hNewThr = CreateThread(NULL, 0, PmiThreadProc, (LPVOID)i, CREATE_SUSPENDED, &newThrId);
+		hNewThr = CreateThread(NULL, 0, PmiThreadProc, (LPVOID)(QWORD)i, CREATE_SUSPENDED, &newThrId);
 		// Register this thread and its callback
 		pmiDesc.dwThrId = newThrId;
 		pmiDesc.kCpuAffinity = (1i64 << i);
@@ -323,7 +323,9 @@ int NoCmdlineStartup()
 	}
 
 	// Set the event and wait for all PMI thread to exit
+#ifdef _DEBUG
 CloseTrace:
+#endif
 	SetEvent(g_appData.hExitEvt);
 	for (int i = 0; i < (int)dwCpusCount; i++) {
 		WaitForSingleObject(pCpuDescArray[i].hPmiThread, INFINITE);
@@ -514,7 +516,7 @@ bool WriteCpuTextDumpsHeader(LPTSTR lpImgName, ULONG_PTR qwBase, DWORD dwSize, B
 		hTextFile = pCurCpuBuff->hTextFile;
 		if (!hTextFile) { dwCurCpuCount++; continue; }
 
-		sprintf_s(fullLine, COUNTOF(fullLine), "AaLl86 Intel PT Trace file. Version 0.5.\r\nCPU ID : %i\r\n", i);
+		sprintf_s(fullLine, COUNTOF(fullLine), "Intel PT Trace file. Version 0.5.\r\nCPU ID : %i\r\n", i);
 		WriteFile(hTextFile, fullLine, (DWORD)strlen(fullLine), &dwBytesIo, NULL);
 		if (qwBase && dwSize) {
 			if (!bKernelTrace)
@@ -583,7 +585,7 @@ DWORD WINAPI PmiThreadProc(LPVOID lpParameter) {
 	DWORD dwBytesIo = 0,										// Number of I/O bytes
 		dwEvtNum = 0;											// The event number that has satisfied the wait
 	BOOLEAN bRetVal = FALSE;
-	DWORD dwCpuNumber = (DWORD)lpParameter;
+	DWORD dwCpuNumber = (DWORD)(QWORD)lpParameter;
 	HANDLE hWaitEvts[2] = { 0 };
 	PT_PMI_USER_CALLBACK pmiDesc = { 0 };
 	PT_CPU_BUFFER_DESC * pCurCpuBuff = &g_appData.pCpuDescArray[dwCpuNumber];

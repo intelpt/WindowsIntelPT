@@ -157,8 +157,8 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 	DWORD dwInBuffSize = 0, dwOutBuffSize = 0;			// Input and output buffer size
 	LPVOID lpOutBuff = NULL, lpInBuff = NULL;			// Input and output buffer
 	KDPC * pkDpc = NULL;								// The target DPC (must be in NonPaged pool)
-	ULONG dwNumOfCpus = 0,								// Total number of System CPUs
-		dwCurCpuCounter = 0;							// The current CPU conter (which is very different in respect to the CPU ID)
+	ULONG dwNumOfCpus = 0;								// Total number of System CPUs
+	//ULONG dwCurCpuCounter = 0;							// The current CPU conter (which is very different in respect to the CPU ID)
 	KAFFINITY kSysCpusAffinity = 0;						// The system CPU affinity mask
 	KAFFINITY kTargetCpusAffinity = 0;					// The target CPU affinity
 	BOOLEAN bPause = FALSE;								// TRUE if we need to pause the trace
