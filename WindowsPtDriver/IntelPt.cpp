@@ -1226,7 +1226,7 @@ VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument
 				pkApc = (PRKAPC)ExAllocatePoolWithTag(NonPagedPool, sizeof(KAPC), MEMTAG);
 				KeInitializeApc(pkApc, (PRKTHREAD)pCurPmiDesc->pTargetThread, CurrentApcEnvironment, &ApcKernelRoutine, NULL,
 					(PKNORMAL_ROUTINE)pCurPmiDesc->lpUserAddress, UserMode, (PVOID)dwCpuNum);
-				ASSERT(KeInsertQueueApc(pkApc, (LPVOID)curCpuData.lpUserVa, (LPVOID)curCpuData.pPtBuffDesc->qwBuffSize, IO_NO_INCREMENT));
+				KeInsertQueueApc(pkApc, (LPVOID)curCpuData.lpUserVa, (LPVOID)curCpuData.pPtBuffDesc->qwBuffSize, IO_NO_INCREMENT);
 			}
 			pNextEntry = pCurEntry->Flink;
 		}
