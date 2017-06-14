@@ -841,7 +841,7 @@ NTSTATUS ClearCpuPtBuffer(DWORD dwCpuId) {
 	if (dwCpuId > KeQueryActiveProcessorCount(NULL)) return FALSE;
 	pPerCpuData = &g_pDrvData->procData[dwCpuId];
 
-	DbgBreak();
+	//DbgBreak();
 	if (!pPerCpuData->pPtBuffDesc || !pPerCpuData->pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr)
 		return STATUS_NOT_FOUND;
 

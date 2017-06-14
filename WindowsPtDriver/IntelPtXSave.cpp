@@ -87,7 +87,7 @@ NTSTATUS SavePtData(PXSAVE_AREA_EX lpXSaveArea, DWORD dwSize) {
 	if (dwSize < dwPtAreaSize) return STATUS_INVALID_BUFFER_SIZE;
 
 	// Now perform the XSAVES
-	DbgBreak();
+	//DbgBreak();
 	_xsaves((LPVOID)lpXSaveArea, xssDesc.value);
 
 	// Restore old XCR0 register
