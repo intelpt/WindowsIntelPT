@@ -164,6 +164,9 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 	BOOLEAN bPause = FALSE;								// TRUE if we need to pause the trace
 	IPI_DPC_STRUCT * pIpiDpcStruct = NULL;				// The IPC DPC struct
 	PMI_USER_CALLBACK_DESC * pmiUserCallbackDesc = NULL;		// The PMI user callback descriptor (if any)
+	PEPROCESS epTarget = NULL;				// Target EPROCESS (if any)
+	BOOL epTargetrefCount = 0;							// Track if we hold a reference to an EPROCESS
+														// due to PsLookupProcessByProcessId
 
 	pIoStack = IoGetCurrentIrpStackLocation(pIrp);
 	dwInBuffSize = pIoStack->Parameters.DeviceIoControl.InputBufferLength;
@@ -252,7 +255,6 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 			// Input buffer: a PT_USER_REQ that describes the tracing information
 			// Output buffer: an optional array of LPVOID that contains the Virtual addresses of the USER mode buffers
 			PT_USER_REQ * ptTraceStruct = NULL;
-			PEPROCESS epTarget = NULL;				// Target EPROCESS (if any)
 			DWORD dwTotalNumOfBuffs = 0,			// TOTAL number of buffers
 				dwCurNumOfBuff = 0;					// The number of copied buffers
 			lpInBuff = pIrp->AssociatedIrp.SystemBuffer;
@@ -279,9 +281,10 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 					ntStatus = STATUS_INVALID_PARAMETER;
 					break;
 				}
+				epTargetrefCount++;
 			}
 			// Verify here that the ranges are correct
-			int iNumOfRanges = ptTraceStruct->IpFiltering.dwNumOfRanges;
+			unsigned int iNumOfRanges = ptTraceStruct->IpFiltering.dwNumOfRanges;
 			if (iNumOfRanges >= 4) { ntStatus = STATUS_INVALID_PARAMETER; break; }
 	
 			#ifndef _KERNEL_TRACE_FROM_USER_MODE_ENABLED
@@ -673,7 +676,7 @@ VOID IoCpuIpiDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SysArg1, PVOID 
 			ptDesc.peProc = pTargetProc;
 			ptDesc.dwNumOfRanges = ptTraceUserStruct->IpFiltering.dwNumOfRanges;
 			if (ptDesc.dwNumOfRanges)
-				RtlCopyMemory(ptDesc.Ranges, ptTraceUserStruct->IpFiltering.Ranges, sizeof(PT_TRACE_RANGE) * 4);
+				RtlCopyMemory(ptDesc.Ranges, ptTraceUserStruct->IpFiltering.Ranges, sizeof(PT_TRACE_RANGE) * 4); // should be ptDesc.dwNumOfRanges
 
 			// user input validated in DriverIo dispatch function
 			ntStatus = StartCpuTrace(ptDesc, (QWORD)ptTraceUserStruct->dwTraceSize);
@@ -690,6 +693,8 @@ VOID IoCpuIpiDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SysArg1, PVOID 
 				ntStatus = FreeCpuResources(dwCpuId);
 			break;
 	}
+
+	if (SysArg2) ObDereferenceObject(SysArg2);
 
 	// Raise the event
 	pIpiDpcStruct->ioSb.Status = ntStatus;
