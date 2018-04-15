@@ -38,11 +38,14 @@ typedef void * LPVOID;
 #pragma warning (disable : 4302)			// HANDLE to DWORD truncation
 #pragma warning (disable : 4311)			// HANDLE to DWORD truncation
 
+#define COUNTOF(x) sizeof(x) / sizeof(x[0])
 
+// 
+// The following type of breakpoint will disappear in RELEASE version
+//
 #ifdef _DEBUG
-#define DbgBreak() __debugbreak()
+#define DBG_BREAK() if ((*KdDebuggerNotPresent) == FALSE) { __debugbreak(); }
 #else
-#define DbgBreak() __noop()
+#define DBG_BREAK() __noop()
 #endif
 
-#define COUNTOF(x) sizeof(x) / sizeof(x[0])

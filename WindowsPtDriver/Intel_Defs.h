@@ -18,6 +18,7 @@
 #define MSR_IA32_RTIT_CTL				0x00000570
 #define MSR_IA32_RTIT_STATUS			0x00000571
 #define MSR_IA32_X2APIC_LVT_PMI			0x00000834
+#define MSR_IA32_VMX_MISC_CTLS			0x00000485			// The VMX MISC MSR (Appendix A.6 of the System Programming Guide - Vol 3)
 
 // Filtering by CR3:
 #define MSR_IA32_RTIT_CR3_MATCH			0x00000572
@@ -202,6 +203,25 @@ union MSR_IA32_PERF_GLOBAL_OVF_CTRL_DESC {
 		DWORD ClrCondChgd : 1;				// [63]
 	} Fields;
 	ULONGLONG All;
+};
+
+//
+// The VMX_MISC_CTLS descriptor register (Appendix A.6 - MISCELLANEOUS DATA of Intel Progamming Guide Volume 3)
+//
+union MSR_IA32_VMX_MISC_CTLS_DESC {
+	struct {
+		UINT64 VmxPreemptionRate : 5;			// [4-0] - Specifies the relationship between the rate of the VMX-preemption timer and that of the timestamp counter(TSC)
+		UINT64 UnrestrictedGuestSupport : 1;	// [5]
+		UINT64 HltSupport : 1;					// [6] - Support for activity state 1 (HLT)
+		UINT64 ShutdownSupport : 1;				// [7] - Support for activity state 2 (shutdown)
+		UINT64 WaitForSipiSupport : 1;			// [8] - Support for activity state 3 (wait-for-SIPI)
+		UINT64 Reserved : 5;					// [13:09]
+		UINT64 IntelPtVmxSupport : 1;			// [14] - Intel Processor Trace (Intel PT) can be used in VMX operation
+		UINT64 RdmsrSmmSupport : 1;				// [15] - If set to 1, RDMSR can be used in system-management mode (SMM) to read the IA32_SMBASE MSR(MSR address 9EH)
+		UINT64 NumberOfCR3Support : 9;			// [24:16] - Number of CR3-target values supported by the processor
+		UINT64 Others : 39;
+	} Fields;
+	UINT64 All;
 };
 
 #pragma pack(pop)

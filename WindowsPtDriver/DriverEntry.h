@@ -10,6 +10,7 @@
 **********************************************************************/
 #pragma once
 #include "IntelPt.h"
+#include "hv.h"
 
 // The PMI Handler function prototype
 typedef VOID (*PMIHANDLER)(PKTRAP_FRAME TrapFrame);
@@ -31,9 +32,12 @@ typedef struct _DRIVER_GLOBAL_DATA {
 	KAFFINITY kLastCpuAffinity;							// The last trace CPU affinity (used only in user-mode tracing)
 	LIST_ENTRY userCallbackList;						// The user callback descriptor list
 	KSPIN_LOCK userCallbackListLock;					// The user callback descriptor list spinlock
-	PER_PROCESSOR_PT_DATA procData[ANYSIZE_ARRAY];		// An array of PER_PROCESSOR_PT_DATA structure (1 per processor)
 	// INTEL_PT_CAPABILITIES ptCapabilities;			// The Intel Processor Trace capabilities (moved to intelpt.h)
 	// PKINTERRUPT pkPmiInterrupt = NULL;				// The PMI Interrupt Object (moved to intelpt.h)
+	BOOLEAN IsUnderHyperV;
+	// TODO: In the future move this to the PER_PROCESSOR_PT_DATA structure
+	HYPERV_DATA HyperV_Data;
+	PER_PROCESSOR_PT_DATA procData[ANYSIZE_ARRAY];		// An array of PER_PROCESSOR_PT_DATA structure (1 per processor)
 }DRIVER_GLOBAL_DATA, *PDRIVER_GLOBAL_DATA;
 extern DRIVER_GLOBAL_DATA * g_pDrvData;
 

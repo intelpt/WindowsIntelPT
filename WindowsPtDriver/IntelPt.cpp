@@ -14,19 +14,40 @@
 #include "Debug.h"
 #include "UndocNt.h"
 #include "IntelPtXSave.h"
+#include <hv.h>
 #include <intrin.h>
 
 #define DirectoryTableBaseOffset 0x28
 
 #pragma region Intel PT management functions
 #pragma code_seg(".nonpaged")
+// Emit a REAL CpuId opcode (bypassing the Hypervisor if needed)
+void CPUIDEX(int CpuInfo[4], int Function, int Leaf) {
+	NTSTATUS ntStatus = STATUS_UNSUCCESSFUL;
+	if (g_pDrvData && g_pDrvData->IsUnderHyperV) 
+	{
+		// If this is not the root partition, we normally do not have the 
+		// "CpuManagement" Partition privilege
+		if (g_pDrvData->HyperV_Data.Info.Features.PartitionPrivilegeMask.CpuManagement != 0)
+			ntStatus = HvCpuId(CpuInfo, Function, Leaf);
+		else
+			// Rely on the standard CPUID instruction
+			ntStatus = STATUS_ACCESS_DENIED;
+	}
+	
+	if (!NT_SUCCESS(ntStatus))
+		return __cpuidex(CpuInfo, Function, Leaf);
+}
+
 NTSTATUS CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 {
-	INTEL_PT_CAPABILITIES ptCap = { 0 };		// The processor PT capabilities
-	int cpuid_ctx[4] = { 0 };					// EAX, EBX, ECX, EDX
+	INTEL_PT_CAPABILITIES ptCap = { 0 };			// The processor PT capabilities
+	MSR_IA32_VMX_MISC_CTLS_DESC VmxMisc = { 0 };	// The VMX miscellaneous data
+	int cpuid_ctx[4] = { 0 };						// EAX, EBX, ECX, EDX
+	KIRQL kIrql = KeGetCurrentIrql();
 
 	// Processor support for Intel Processor Trace is indicated by CPUID.(EAX=07H,ECX=0H):EBX[bit 25] = 1.
-	__cpuidex(cpuid_ctx, 0x07, 0);
+	CPUIDEX(cpuid_ctx, 0x07, 0);
 	if ((cpuid_ctx[1] & (1 << 25)) == 0) 
 		return STATUS_NOT_SUPPORTED;
 
@@ -36,7 +57,7 @@ NTSTATUS CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 
 	// Enumerate the Intel Processor Trace capabilities
 	RtlZeroMemory(cpuid_ctx, sizeof(cpuid_ctx));
-	__cpuidex(cpuid_ctx, 0x14, 0);
+	CPUIDEX(cpuid_ctx, 0x14, 0);
 	ptCap.bCr3Filtering = (cpuid_ctx[1] & (1 << 0)) != 0;					// EBX
 	ptCap.bConfPsbAndCycSupported = (cpuid_ctx[1] & (1 << 1)) != 0;
 	ptCap.bIpFiltering = (cpuid_ctx[1] & (1 << 2)) != 0;
@@ -51,13 +72,30 @@ NTSTATUS CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 	if (cpuid_ctx[0] != 0)
 	{
 		RtlZeroMemory(cpuid_ctx, sizeof(cpuid_ctx));
-		__cpuidex(cpuid_ctx, 0x14, 1);
+		CPUIDEX(cpuid_ctx, 0x14, 1);
 		ptCap.numOfAddrRanges = (BYTE)(cpuid_ctx[0] & 0x7);
 		ptCap.mtcPeriodBmp = (SHORT)((cpuid_ctx[0] >> 16) & 0xFFFF);
 		ptCap.cycThresholdBmp = (SHORT)(cpuid_ctx[1] & 0xFFFF);
 		ptCap.psbFreqBmp = (SHORT)((cpuid_ctx[1] >> 16) & 0xFFFF);
 	}
  
+	// Get if the PT is compatible with the Hypervisors here:
+	if (kIrql < DISPATCH_LEVEL)
+	{
+		__try
+		{
+			VmxMisc.All = __readmsr(MSR_IA32_VMX_MISC_CTLS);
+		} 
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			// Some Hypervisors (like HyperV) detect the read to VMX_MISC_CTLS and raise an exception
+			VmxMisc.All = 0;
+		}
+	}
+	ptCap.bVmxSupport = VmxMisc.Fields.IntelPtVmxSupport;
+	if (VmxMisc.Fields.IntelPtVmxSupport == 1)
+		DrvDbgPrint("CheckIntelPtSupport - The processor supports Intel PT in VMX operations.\r\n");
+
 	*lpPtCap = ptCap;
 	return STATUS_SUCCESS;
 }
@@ -90,7 +128,7 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 	if (desc.dwNumOfRanges > 0) {
 		if (!ptCap.bIpFiltering) return STATUS_NOT_SUPPORTED;
 		if (desc.dwNumOfRanges > 4) return STATUS_INVALID_PARAMETER_1;
-		if (ptCap.numOfAddrRanges < desc.dwNumOfRanges) return STATUS_NOT_SUPPORTED;
+		if ((DWORD)ptCap.numOfAddrRanges < desc.dwNumOfRanges) return STATUS_NOT_SUPPORTED;
 	}
 	// Now check the output mode
 	if (!ptCap.bSingleRangeSupport && !ptCap.bTopaOutput) return STATUS_NOT_SUPPORTED;
@@ -139,9 +177,11 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		KeRaiseIrql(DISPATCH_LEVEL, &kOldIrql);
 
 	// Step 1. Disable all the previous PT flags
+	DBG_BREAK();
 	rtitCtlDesc.All = __readmsr(MSR_IA32_RTIT_CTL);
 	rtitCtlDesc.Fields.TraceEn = 0;
 	__writemsr(MSR_IA32_RTIT_CTL, rtitCtlDesc.All);
+	ASSERT(__readmsr(MSR_IA32_RTIT_CTL) == rtitCtlDesc.All);
 
 	// Clear IA32_RTIT_STATUS MSR
 	rtitStatusDesc.All = __readmsr(MSR_IA32_RTIT_STATUS);
@@ -161,12 +201,14 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		// Set the proc_trace_table_base
 		rtitOutBaseDesc.All = (ULONGLONG)pPtBuffDesc->u.ToPA.lpTopaPhysAddr;
 		__writemsr(MSR_IA32_RTIT_OUTPUT_BASE, rtitOutBaseDesc.All);
+		ASSERT(__readmsr(MSR_IA32_RTIT_OUTPUT_BASE) == rtitOutBaseDesc.All);
 
 		// Set the proc_trace_table_offset: indicates the entry of the current table that is currently in use
 		rtitOutMasksDesc.Fields.LowerMask = 0x7F;
 		rtitOutMasksDesc.Fields.MaskOrTableOffset = 0;		// Start from the first entry in the table
 		rtitOutMasksDesc.Fields.OutputOffset = 0;			// Start at offset 0
 		__writemsr(MSR_IA32_RTIT_OUTPUT_MASK_PTRS, rtitOutMasksDesc.All);
+		ASSERT(__readmsr(MSR_IA32_RTIT_OUTPUT_MASK_PTRS) == rtitOutMasksDesc.All);
 	}
 	else
 	{
@@ -174,9 +216,11 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		rtitCtlDesc.Fields.ToPA = 0;						// We use the single-range output scheme
 		rtitOutBaseDesc.All = (ULONGLONG)pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr;
 		__writemsr(MSR_IA32_RTIT_OUTPUT_BASE, rtitOutBaseDesc.All);
+		ASSERT(__readmsr(MSR_IA32_RTIT_OUTPUT_BASE) == rtitOutBaseDesc.All);
 
 		rtitOutMasksDesc.All = (1 << PAGE_SHIFT) - 1;		// The physical page always has low 12 bits NULL
 		__writemsr(MSR_IA32_RTIT_OUTPUT_MASK_PTRS, rtitOutMasksDesc.All);
+		ASSERT(__readmsr(MSR_IA32_RTIT_OUTPUT_MASK_PTRS) == rtitOutMasksDesc.All);
 	}
 
 	// Set the TRACE options:
@@ -189,11 +233,13 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 	if (lpProcPtData->lpTargetProcCr3) {
 		// Set the page table filter for the target process 
 		__writemsr(MSR_IA32_RTIT_CR3_MATCH, (ULONGLONG)targetCr3);
+		ASSERT(__readmsr(MSR_IA32_RTIT_CR3_MATCH) == (ULONGLONG)targetCr3);
 		rtitCtlDesc.Fields.CR3Filter = 1;
 	}
 	else {
 		// Set the register to 0
 		__writemsr(MSR_IA32_RTIT_CR3_MATCH, 0);
+		ASSERT(__readmsr(MSR_IA32_RTIT_CR3_MATCH) == 0);
 		rtitCtlDesc.Fields.CR3Filter = 0;
 	}
 
@@ -208,7 +254,9 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 		if (lpProcPtData->IpRanges[0].bStopTrace) rtitCtlDesc.Fields.Addr0Cfg = 2;
 		else rtitCtlDesc.Fields.Addr0Cfg = 1;
 		__writemsr(MSR_IA32_RTIT_ADDR0_START, (QWORD)lpProcPtData->IpRanges[0].lpStartVa);
+		ASSERT(__readmsr(MSR_IA32_RTIT_ADDR0_START) == (QWORD)lpProcPtData->IpRanges[0].lpStartVa);
 		__writemsr(MSR_IA32_RTIT_ADDR0_END, (QWORD)lpProcPtData->IpRanges[0].lpEndVa);
+		ASSERT(__readmsr(MSR_IA32_RTIT_ADDR0_END) == (QWORD)lpProcPtData->IpRanges[0].lpEndVa);
 	}
 	if (lpProcPtData->dwNumOfActiveRanges > 1) {
 		if (lpProcPtData->IpRanges[1].bStopTrace) rtitCtlDesc.Fields.Addr1Cfg = 2;
@@ -249,6 +297,7 @@ NTSTATUS StartCpuTrace(PT_TRACE_DESC desc, PT_BUFFER_DESCRIPTOR * pPtBuffDesc) {
 	// Switch the tracing to ON dude :-)
 	rtitCtlDesc.Fields.TraceEn = 1;
 	__writemsr(MSR_IA32_RTIT_CTL, rtitCtlDesc.All);
+	ASSERT(__readmsr(MSR_IA32_RTIT_CTL) == rtitCtlDesc.All);
 
 	// Read the status register
 	rtitStatusDesc.All = __readmsr(MSR_IA32_RTIT_STATUS);
@@ -446,7 +495,7 @@ NTSTATUS StopAndDisablePt()
 	ntStatus = CheckIntelPtSupport(&ptCap);
 	if (!NT_SUCCESS(ntStatus)) return ntStatus;
 
-	#ifdef ENABLE_EXPERIMENTAL_XSAVE
+	#if ENABLE_EXPERIMENTAL_XSAVE
 	ntStatus = SavePtData((PXSAVE_AREA_EX)lpProcPtData->lpXSaveArea, lpProcPtData->dwXSaveAreaSize);
 	#endif
 
@@ -707,10 +756,9 @@ NTSTATUS AllocPtBuffer(PT_BUFFER_DESCRIPTOR ** lppBuffDesc, QWORD qwSize, BOOLEA
 // Free a PT trace buffer (use with caution, avoid BSOD please)
 NTSTATUS FreePtBuffer(PT_BUFFER_DESCRIPTOR * ptBuffDesc) {
 	//ULONG dwCurCpu = 0;										// Current CPU number
-#ifdef _DEBUG
 	KIRQL kIrql = KeGetCurrentIrql();
 	ASSERT(kIrql <= DISPATCH_LEVEL);
-#endif
+
 	if (!ptBuffDesc) return STATUS_INVALID_PARAMETER;
 	if (ptBuffDesc->qwBuffSize < PAGE_SIZE) return STATUS_INVALID_BUFFER_SIZE;
 
@@ -841,7 +889,6 @@ NTSTATUS ClearCpuPtBuffer(DWORD dwCpuId) {
 	if (dwCpuId > KeQueryActiveProcessorCount(NULL)) return FALSE;
 	pPerCpuData = &g_pDrvData->procData[dwCpuId];
 
-	//DbgBreak();
 	if (!pPerCpuData->pPtBuffDesc || !pPerCpuData->pPtBuffDesc->u.Simple.lpTraceBuffPhysAddr)
 		return STATUS_NOT_FOUND;
 
@@ -968,13 +1015,18 @@ NTSTATUS UnmapTraceBuffToUserVa(DWORD dwCpuId)
 NTSTATUS RegisterPmiInterrupt() 
 {
 	NTSTATUS ntStatus = STATUS_SUCCESS;						// Returned NTSTATUS
-	PMIHANDLER pNewPmiHandler = NULL;
+	PMIHANDLER pNewPmiHandler = NULL;						// The new PMI handler routine
+	INT CpuIdData[4] = { 0 };								// The CPUID data
 	//PMIHANDLER pOldPmiHandler = NULL; 					// The old PMI handler (currently not implemented)
+	BOOLEAN bX2ApicCompat = FALSE;
 
 	BYTE lpBuff[0x20] = { 0 };
 	//XXX ULONG dwBytesIo = 0;								// Number of I/O bytes
 
-	// First of all we need to search for HalpLocalApic symbol
+	// First of all we need to check if this system supports APIC or x2Apic
+	__cpuidex(CpuIdData, 1, 0);
+	bX2ApicCompat = (CpuIdData[2] & (1 < 21)) == 1;
+
 	MSR_IA32_APIC_BASE_DESC ApicBase = { 0 };				// In Multi-processors systems this address could change
 	ApicBase.All = __readmsr(MSR_IA32_APIC_BASE);			// In Windows systems all the processors LVT are mapped at the same physical address
 
@@ -982,6 +1034,7 @@ NTSTATUS RegisterPmiInterrupt()
 		LPDWORD lpdwApicBase = NULL;
 		PHYSICAL_ADDRESS apicPhys = { 0 };
 
+		// Map the APIC I/O space (each DWORD is a LVT_Entry structure)
 		apicPhys.QuadPart = ApicBase.All & (~0xFFFi64);
 		lpdwApicBase = (LPDWORD)MmMapIoSpace(apicPhys, 0x1000, MmNonCached);
 
@@ -998,6 +1051,7 @@ NTSTATUS RegisterPmiInterrupt()
 	else {
 		// Current system uses x2APIC mode, no need to map anything
 		g_pDrvData->bCpuX2ApicMode = TRUE;
+		// From Intel Manual: In x2APIC mode, system software uses RDMSR and WRMSR to access the APIC registers.
 	}
 
 	// The following functions must be stored in HalDispatchTable 
@@ -1092,7 +1146,9 @@ VOID IntelPtPmiHandler(PKTRAP_FRAME pTrapFrame)
 	// Re-enable the PMI
 	if (g_pDrvData->bCpuX2ApicMode) 
 	{
-		// Check Intel Manuals, Vol. 3A section 10-37
+		// Check Intel Manuals, Vol. 3A section 10-12
+		// The local APIC registers can be accessed via the MSR interface only when the local APIC has
+		// been switched to the x2APIC mode as described
 		ULONGLONG perfMonEntry = __readmsr(MSR_IA32_X2APIC_LVT_PMI);
 		perfMonDesc.All = (ULONG)perfMonEntry;
 		perfMonDesc.Fields.Masked = 0;
@@ -1102,6 +1158,7 @@ VOID IntelPtPmiHandler(PKTRAP_FRAME pTrapFrame)
 		if (!lpdwApicBase)
 			// XXX: Not sure how to continue, No MmMapIoSpace at this IRQL (should not happen)
 			KeBugCheckEx(INTERRUPT_EXCEPTION_NOT_HANDLED, NULL, NULL, NULL, NULL);
+		// Access the APIC register through the I/O port
 		perfMonDesc.All = lpdwApicBase[0x340 / 4];
 		perfMonDesc.Fields.Masked = 0;
 		lpdwApicBase[0x340 / 4] = perfMonDesc.All;
@@ -1211,6 +1268,7 @@ VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument
 		pNextEntry = g_pDrvData->userCallbackList.Flink;
 		while (pNextEntry != &g_pDrvData->userCallbackList) {
 			PPMI_USER_CALLBACK_DESC pCurPmiDesc = NULL;
+			BOOLEAN bApcInserted = FALSE;
 			pCurEntry = pNextEntry;
 			pCurPmiDesc = CONTAINING_RECORD(pCurEntry, PMI_USER_CALLBACK_DESC, entry);
 			if ((1i64 << dwCpuNum) & pCurPmiDesc->kAffinity) {
@@ -1227,8 +1285,9 @@ VOID IntelPmiDpc(struct _KDPC *pDpc, PVOID DeferredContext, PVOID SystemArgument
 				if (pkApc) {
 					KeInitializeApc(pkApc, (PRKTHREAD)pCurPmiDesc->pTargetThread, CurrentApcEnvironment, &ApcKernelRoutine, NULL,
 						(PKNORMAL_ROUTINE)pCurPmiDesc->lpUserAddress, UserMode, (PVOID)dwCpuNum);
-					KeInsertQueueApc(pkApc, (LPVOID)curCpuData.lpUserVa, (LPVOID)curCpuData.pPtBuffDesc->qwBuffSize, IO_NO_INCREMENT);
+					bApcInserted = KeInsertQueueApc(pkApc, (LPVOID)curCpuData.lpUserVa, (LPVOID)curCpuData.pPtBuffDesc->qwBuffSize, IO_NO_INCREMENT);
 				}
+				ASSERT(pkApc != NULL && bApcInserted == TRUE);
 			}
 			pNextEntry = pCurEntry->Flink;
 		}

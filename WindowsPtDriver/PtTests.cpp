@@ -172,10 +172,9 @@ NTSTATUS GetKernelModule(LPTSTR lpName, SYSTEM_MODULE_INFORMATION * pSysModuleDe
 	SYSTEM_ALL_MODULES * pAllModules = NULL;
 	ULONG dwBuffSize = 0,
 		dwRetLength = 0;
-#if _DEBUG
 	KIRQL kIrql = KeGetCurrentIrql();	// Current IRQL
 	ASSERT(kIrql == PASSIVE_LEVEL);
-#endif 
+
 	ntStatus = ZwQuerySystemInformation(SystemModuleInformation, (PVOID)pAllModules, NULL, &dwBuffSize);
 	if (ntStatus != STATUS_INFO_LENGTH_MISMATCH) return ntStatus;
 

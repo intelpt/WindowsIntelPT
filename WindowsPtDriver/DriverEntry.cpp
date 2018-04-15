@@ -14,6 +14,7 @@
 #include "Debug.h"
 #include "UndocNt.h"
 #include "IntelPtXSave.h"
+#include <hv.h>
 
 const LPTSTR g_lpDevName = L"\\Device\\WindowsIntelPtDev";
 const LPTSTR g_lpDosDevName = L"\\DosDevices\\WindowsIntelPtDev";
@@ -34,8 +35,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegPath)
 	INTEL_PT_CAPABILITIES ptCap = { 0 };				// The Intel PT Capabilities for this processor
 
 	// Debug helper
-	if ((*KdDebuggerNotPresent) == FALSE)
-		DbgBreak();
+	DBG_BREAK();
 	EnableDebugOutput();
 
 	// Get the total number of system processors
@@ -47,6 +47,18 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegPath)
 	if (!g_pDrvData) return STATUS_INSUFFICIENT_RESOURCES;
 	RtlZeroMemory(g_pDrvData, dwBuffSize);
 	g_pDrvData->dwNumProcs = dwNumOfProcs;
+
+	// Check Microsoft HyperV presence:
+	if (NT_SUCCESS(DetectMicrosoftHyperV(NULL))) {
+		// HyperV detected, allocate and initialize all the needed data
+		ntStatus = InitGlobalHv();
+		ASSERT(NT_SUCCESS(ntStatus));
+		g_pDrvData->IsUnderHyperV = TRUE;
+		if (g_pDrvData->HyperV_Data.Info.Features.PartitionPrivilegeMask.CreatePartitions == 0)
+			DbgPrint("[" DRV_NAME "] Info: Intel Processor Trace driver is running into an HyperV child VM. \r\n");
+	}
+	else
+		g_pDrvData->IsUnderHyperV = FALSE;
 
 	// Check PT support
 	ntStatus = CheckIntelPtSupport(&ptCap);
@@ -61,7 +73,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegPath)
 		DbgPrint("[" DRV_NAME "] Info: The processor %i supports maximum of %i IP ranges.\r\n", KeGetCurrentProcessorNumber(), ptCap.numOfAddrRanges);
 	}
 
-	#ifdef ENABLE_EXPERIMENTAL_XSAVE
+	#if ENABLE_EXPERIMENTAL_XSAVE
 	ntStatus = InitializeCpusXSaveArea();
 	#endif
 
@@ -282,6 +294,10 @@ VOID DriverUnload(PDRIVER_OBJECT pDrvObj)
 		IoDeleteSymbolicLink(&dosDevNameString);
 		IoDeleteDevice(g_pDrvData->pMainDev);
 	}
+
+	// Unload HyperV data
+	if (g_pDrvData->IsUnderHyperV)
+		DestroyGlobalHv();
 
 	// uninstall PMI
 	if (g_pDrvData->bPmiInstalled)

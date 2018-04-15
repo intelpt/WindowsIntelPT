@@ -158,15 +158,12 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 	LPVOID lpOutBuff = NULL, lpInBuff = NULL;			// Input and output buffer
 	KDPC * pkDpc = NULL;								// The target DPC (must be in NonPaged pool)
 	ULONG dwNumOfCpus = 0;								// Total number of System CPUs
-	//ULONG dwCurCpuCounter = 0;							// The current CPU conter (which is very different in respect to the CPU ID)
 	KAFFINITY kSysCpusAffinity = 0;						// The system CPU affinity mask
 	KAFFINITY kTargetCpusAffinity = 0;					// The target CPU affinity
 	BOOLEAN bPause = FALSE;								// TRUE if we need to pause the trace
 	IPI_DPC_STRUCT * pIpiDpcStruct = NULL;				// The IPC DPC struct
+	PEPROCESS epTarget = NULL;							// Target EPROCESS (if any)
 	PMI_USER_CALLBACK_DESC * pmiUserCallbackDesc = NULL;		// The PMI user callback descriptor (if any)
-	PEPROCESS epTarget = NULL;				// Target EPROCESS (if any)
-	BOOL epTargetrefCount = 0;							// Track if we hold a reference to an EPROCESS
-														// due to PsLookupProcessByProcessId
 
 	pIoStack = IoGetCurrentIrpStackLocation(pIrp);
 	dwInBuffSize = pIoStack->Parameters.DeviceIoControl.InputBufferLength;
@@ -281,10 +278,9 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 					ntStatus = STATUS_INVALID_PARAMETER;
 					break;
 				}
-				epTargetrefCount++;
 			}
 			// Verify here that the ranges are correct
-			unsigned int iNumOfRanges = ptTraceStruct->IpFiltering.dwNumOfRanges;
+			int iNumOfRanges = (int)ptTraceStruct->IpFiltering.dwNumOfRanges;
 			if (iNumOfRanges >= 4) { ntStatus = STATUS_INVALID_PARAMETER; break; }
 	
 			#ifndef _KERNEL_TRACE_FROM_USER_MODE_ENABLED
@@ -372,7 +368,6 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 			
 			// Set the last CPU affinity
 			g_pDrvData->kLastCpuAffinity = kTargetCpusAffinity;
-
 			pIrp->IoStatus.Information = dwCurNumOfBuff * sizeof(LPVOID);
 			ntStatus = STATUS_SUCCESS;
 			break;
@@ -630,6 +625,11 @@ NTSTATUS DeviceIoControl(PDEVICE_OBJECT pDevObj, PIRP pIrp)
 	if (pkDpc) ExFreePool((LPVOID)pkDpc);
 	pIrp->IoStatus.Status = ntStatus;
 	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+
+	// Do not forget to release the REFERENCE to the target EPROCESS (if any)
+	if (epTarget) {
+		ObDereferenceObject(epTarget);
+	}
 	return ntStatus;
 }
 
@@ -676,7 +676,7 @@ VOID IoCpuIpiDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SysArg1, PVOID 
 			ptDesc.peProc = pTargetProc;
 			ptDesc.dwNumOfRanges = ptTraceUserStruct->IpFiltering.dwNumOfRanges;
 			if (ptDesc.dwNumOfRanges)
-				RtlCopyMemory(ptDesc.Ranges, ptTraceUserStruct->IpFiltering.Ranges, sizeof(PT_TRACE_RANGE) * 4); // should be ptDesc.dwNumOfRanges
+				RtlCopyMemory(ptDesc.Ranges, ptTraceUserStruct->IpFiltering.Ranges, sizeof(PT_TRACE_RANGE) * 4);
 
 			// user input validated in DriverIo dispatch function
 			ntStatus = StartCpuTrace(ptDesc, (QWORD)ptTraceUserStruct->dwTraceSize);
@@ -693,8 +693,6 @@ VOID IoCpuIpiDpc(struct _KDPC *Dpc, PVOID DeferredContext, PVOID SysArg1, PVOID 
 				ntStatus = FreeCpuResources(dwCpuId);
 			break;
 	}
-
-	if (SysArg2) ObDereferenceObject(SysArg2);
 
 	// Raise the event
 	pIpiDpcStruct->ioSb.Status = ntStatus;
