@@ -22,6 +22,7 @@ Primary benefits include:
 * Log to single physical address range 
 * Log to table of physical pages and map to virtual address range
 * Multi-core tracing support 
+* Full support for HyperV Root Partitions
 
 **Build Instructions**
 
@@ -54,7 +55,8 @@ The driver currently executes a DbgBreak() on load if a kernel debugger is attac
 
 * Output sideband memory map information for post processing
 * Per-thread logging
+* Implement the support for Kernel KVA Shadowing
 
 
   
-Last revision: 01/28/2017
+Last revision: 04/15/2018
