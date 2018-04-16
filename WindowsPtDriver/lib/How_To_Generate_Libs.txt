@@ -4,17 +4,17 @@ These files have been generated with the following commands:
    dumpbin /exports winhv.sys > winhv_exports.txt
    dumpbin /exports winhvr.sys > winhvr_exports.txt
 
-2. Copy all the names and the ordinals in a DEF file like the following:
+2. Copy all the names (and optionally the ordinals) in a DEF file like the following:
    LIBRARY WinHv
    EXPORTS
-   DllInitialize
-   DllUnload                           
-   DriverEntry                        
-   WinHvAcceptGpaPages 
+   DllInitialize @1
+   DllUnload @2                          
+   DriverEntry @3                       
+   WinHvAcceptGpaPages @4
    <List of Exported Entry Points>
 
 3. Generate the LIB files
-   lib /def:winhv_exports.txt /out:winhv.lib
+   lib /def:winhv_exports.def /out:winhv.lib
 
 Simple, isn't it?
 
