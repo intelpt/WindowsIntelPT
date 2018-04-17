@@ -8,12 +8,14 @@
  *  Microsoft Ltd & TALOS Research and Intelligence Group
  *  All right reserved
  **********************************************************************/
+
 #include "stdafx.h"
 #include "IntelPtControlApp.h"
 #include "Psapi.h"
 #include <crtdbg.h>
 #include "pt_dump.h"
 #include "UndocNt.h"
+#include "log.h"
 const LPTSTR g_ptDevName = L"\\\\.\\WindowsIntelPtDev";
 #pragma comment (lib, "ntdll.lib")
 
@@ -26,7 +28,7 @@ int NoCmdlineStartup()
 	TCHAR procPath[MAX_PATH] = { 0 };				// The target process full path
 	PT_USER_REQ ptStartStruct = { 0 };				// The Intel PT starting structure
 	DWORD dwBytesIo = 0;							// Number of I/O bytes
-	DWORD dwCpusCount = 1;							// Number of CPUs in which to run the code
+	DWORD dwCpusCount = 0;							// Number of CPUs in which to run the code
 	DWORD dwLastErr = 0;							// Last Win32 Error
 	KAFFINITY cpuAffinity = 0;						// The processor Affinity mask
 	BOOLEAN bDoKernelTrace = FALSE;					// TRUE if I would like to do kernel tracing
@@ -42,18 +44,28 @@ int NoCmdlineStartup()
 	RtlZeroMemory(lpOutBasePath, MAX_PATH * sizeof(TCHAR));
 
 	GetNativeSystemInfo(&sysInfo);
-	bRetVal = CheckIntelPtSupport(&ptCap);
-	wprintf(L"Intel Processor Tracing support for this CPU: ");
-	if (bRetVal) cl_wprintf(GREEN, L"YES\r\n"); else cl_wprintf(RED, L"NO\r\n");
 	hPtDev = CreateFile(g_ptDevName, FILE_ALL_ACCESS, 0, NULL, OPEN_EXISTING, 0, NULL);
 	dwLastErr = GetLastError();
 
 	if (hPtDev == INVALID_HANDLE_VALUE) {
+		// Do not use the driver to check the processor Support
+		bRetVal = CheckIntelPtSupport(&ptCap);
+		wprintf(L"Intel Processor Tracing support for this CPU: ");
+		if (bRetVal) cl_wprintf(GREEN, L"YES\r\n"); else cl_wprintf(RED, L"NO\r\n");
 		wprintf(L"Unable to open the Intel PT device object!\r\n");
 		return 0;
 	}
 	else
 		g_appData.hPtDev = hPtDev;
+
+	// First check if the processor is Intel PT compatible (bypass HyperV if needed)
+	bRetVal = DeviceIoControl(hPtDev, IOCTL_PTDRV_CHECKSUPPORT, NULL, 0, (LPVOID)&ptCap, sizeof(ptCap), &dwBytesIo, NULL);
+	if (!bRetVal)
+		// We have failed, rely on the classical method as last resort
+		bRetVal = CheckIntelPtSupport(&ptCap);
+	wprintf(L"Intel Processor Tracing support for this CPU: ");
+	if (bRetVal) cl_wprintf(GREEN, L"YES\r\n"); else cl_wprintf(RED, L"NO\r\n");
+
 
 	// Create the Exit Event
 	g_appData.hExitEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -88,18 +100,18 @@ int NoCmdlineStartup()
 		if (dwCpusCount > sysInfo.dwNumberOfProcessors) {
 			wprintf(L"Invalid value, assuming all the processors as valid.\r\n");
 			cpuAffinity = sysInfo.dwActiveProcessorMask;
+			dwCpusCount = sysInfo.dwNumberOfProcessors;
 		} else
 			cpuAffinity = ((DWORD_PTR)(-1i64) >> ((sizeof(DWORD_PTR) * 8) - dwCpusCount));
 		if (FALSE) 
 			// If you would like to test the different affinities:
 			cpuAffinity = 0xd;
 		_ASSERT((sysInfo.dwActiveProcessorMask | cpuAffinity) == sysInfo.dwActiveProcessorMask);
+	} else {
+		cpuAffinity = 0x1;
+		dwCpusCount = 1;
 	}
-	else
-	{
-		cpuAffinity = sysInfo.dwActiveProcessorMask;
-	}
-#pragma endregion
+	#pragma endregion
 	
 	#pragma region 3. Create the CPU buffer data structures and trace files
 	wprintf(L"Creating trace files (binary and readable)... ");
@@ -121,6 +133,7 @@ int NoCmdlineStartup()
 			wprintf(L"(in TEMP directory)\r\n");
 		}
 	}
+	
 	if (!bRetVal) {
 		RemoveDirectory(lpOutBasePath);
 		cl_wprintf(RED, L"Error!\r\n");
@@ -152,7 +165,13 @@ int NoCmdlineStartup()
 		pi.dwProcessId = GetCurrentProcessId();
 	}
 
-	if (!bDoKernelTrace) bRetVal = SetProcessAffinityMask(pi.hProcess, cpuAffinity);
+	if (!bDoKernelTrace) {
+		bRetVal = SetProcessAffinityMask(pi.hProcess, cpuAffinity);
+		_ASSERT(bRetVal);
+		bRetVal = SetThreadAffinityMask(pi.hThread, cpuAffinity);
+		_ASSERT(bRetVal);
+		wprintf(L"   Affinity mask set to 0x%08X.\r\n", (UINT32)cpuAffinity);
+	}
 	else bRetVal = (BOOL)SetThreadAffinityMask(pi.hThread, cpuAffinity);
 	_ASSERT(bRetVal);
 	if (!bRetVal) {
@@ -166,7 +185,7 @@ int NoCmdlineStartup()
 		HANDLE hNewThr = NULL;
 		DWORD newThrId = 0;
 
-		hNewThr = CreateThread(NULL, 0, PmiThreadProc, (LPVOID)(QWORD)i, CREATE_SUSPENDED, &newThrId);
+		hNewThr = CreateThread(NULL, 0, PmiThreadProc, (LPVOID)i, CREATE_SUSPENDED, &newThrId);
 		// Register this thread and its callback
 		pmiDesc.dwThrId = newThrId;
 		pmiDesc.kCpuAffinity = (1i64 << i);
@@ -327,9 +346,7 @@ int NoCmdlineStartup()
 	}
 
 	// Set the event and wait for all PMI thread to exit
-#ifdef _DEBUG
 CloseTrace:
-#endif
 	SetEvent(g_appData.hExitEvt);
 	for (int i = 0; i < (int)dwCpusCount; i++) {
 		WaitForSingleObject(pCpuDescArray[i].hPmiThread, INFINITE);
@@ -379,11 +396,17 @@ CloseTrace:
     return 0;
 }
 
+extern "C" void MovToRdi(QWORD value);
 // Check if the current CPU has support for Intel PT
 BOOL CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 {
 	INTEL_PT_CAPABILITIES ptCap = { 0 };
 	int cpuid_ctx[4] = { 0 };			// EAX, EBX, ECX, EDX
+
+	// Instrumentation for the Hypervisor
+	QWORD rdiVal = 0;
+	RtlCopyMemory(&rdiVal, " AaLl86 ", sizeof(__int64));
+	MovToRdi(rdiVal);
 
 	// Processor support for Intel Processor Trace is indicated by CPUID.(EAX=07H,ECX=0H):EBX[bit 25] = 1.
 	__cpuidex(cpuid_ctx, 0x07, 0);
@@ -391,6 +414,7 @@ BOOL CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 
 	// Now enumerate the Intel Processor Trace capabilities
 	RtlZeroMemory(cpuid_ctx, sizeof(cpuid_ctx));
+	MovToRdi(rdiVal);
 	__cpuidex(cpuid_ctx, 0x14, 0);
 	// If the maximum valid sub-leaf index is 0 exit immediately
 	if (cpuid_ctx[0] == 0) return FALSE;
@@ -407,6 +431,7 @@ BOOL CheckIntelPtSupport(INTEL_PT_CAPABILITIES * lpPtCap)
 
 	// Enmeration part 2:
 	RtlZeroMemory(cpuid_ctx, sizeof(cpuid_ctx));
+	MovToRdi(rdiVal);
 	__cpuidex(cpuid_ctx, 0x14, 1);
 	ptCap.numOfAddrRanges = (BYTE)(cpuid_ctx[0] & 0x7);
 	ptCap.mtcPeriodBmp = (SHORT)((cpuid_ctx[0] >> 16) & 0xFFFF);
@@ -503,6 +528,8 @@ bool WriteCpuTextDumpsHeader(LPTSTR lpImgName, ULONG_PTR qwBase, DWORD dwSize, B
 	KAFFINITY kCpuAffinity = 0;			// Current CPU affinity mask
 	CHAR fullLine[0x200] = { 0 };		// A full line of log dump
 	DWORD dwBytesIo = 0;
+	CVersionInfo verInfo;				// Version information about myself
+	LPTSTR verString = NULL;			// My version info string
 	if (!g_appData.pCpuDescArray) return false;
 
 	// Grab some basic data
@@ -520,7 +547,8 @@ bool WriteCpuTextDumpsHeader(LPTSTR lpImgName, ULONG_PTR qwBase, DWORD dwSize, B
 		hTextFile = pCurCpuBuff->hTextFile;
 		if (!hTextFile) { dwCurCpuCount++; continue; }
 
-		sprintf_s(fullLine, COUNTOF(fullLine), "Intel PT Trace file. Version 0.5.\r\nCPU ID : %i\r\n", i);
+		verString = verInfo.GetFileVersionString();
+		sprintf_s(fullLine, COUNTOF(fullLine), "Intel PT Trace file. Version %S.\r\nCPU ID : %i\r\n", verString, i);
 		WriteFile(hTextFile, fullLine, (DWORD)strlen(fullLine), &dwBytesIo, NULL);
 		if (qwBase && dwSize) {
 			if (!bKernelTrace)
@@ -589,7 +617,7 @@ DWORD WINAPI PmiThreadProc(LPVOID lpParameter) {
 	DWORD dwBytesIo = 0,										// Number of I/O bytes
 		dwEvtNum = 0;											// The event number that has satisfied the wait
 	BOOLEAN bRetVal = FALSE;
-	DWORD dwCpuNumber = (DWORD)(QWORD)lpParameter;
+	DWORD dwCpuNumber = (DWORD)lpParameter;
 	HANDLE hWaitEvts[2] = { 0 };
 	PT_PMI_USER_CALLBACK pmiDesc = { 0 };
 	PT_CPU_BUFFER_DESC * pCurCpuBuff = &g_appData.pCpuDescArray[dwCpuNumber];

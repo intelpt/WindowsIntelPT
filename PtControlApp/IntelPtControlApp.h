@@ -12,7 +12,7 @@
 #include "IntelPt.h"
 #include "..\WindowsPtDriver\DriverIo.h"
 
-#define DEFAULT_TRACE_BUFF_SIZE 128 * 1024			// Default TRACE buffer size
+#define DEFAULT_TRACE_BUFF_SIZE 64 * 1024			// Default TRACE buffer size
 #define ROUND_TO_PAGES(Size)  (((ULONG_PTR)(Size) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
 #define PAGE_SIZE 0x1000
 

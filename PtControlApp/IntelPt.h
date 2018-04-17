@@ -15,19 +15,22 @@ typedef long NTSTATUS;
 
 #pragma pack(1)
 struct INTEL_PT_CAPABILITIES {
-	BOOLEAN bCr3Filtering : 1;						// [0] - CR3 Filtering Support (Indicates that IA32_RTIT_CTL.CR3Filter can be set to 1)
-	BOOLEAN bConfPsbAndCycSupported : 1;			// [1] - Configurable PSB and Cycle-Accurate Mode Supported (IA32_RTIT_CTL.PSBFreq can be set to a non-zero value, IA32_RTIT_STATUS.PacketByteCnt can be set to a non-zero value)
-	BOOLEAN bIpFiltering : 1;						// [2] - IP Filtering and TraceStop	supported, and Preserve Intel PT MSRs across warm reset
-	BOOLEAN bMtcSupport : 1;						// [3] - IA32_RTIT_CTL.MTCEn can be set to 1, and MTC packets will be generated (section 36.2.5)
-	BOOLEAN bTopaOutput : 1;						// [4] - Tracing can be enabled with IA32_RTIT_CTL.ToPA = 1, hence utilizing the ToPA output scheme (section 36.2.4.2)
-	BOOLEAN bTopaMultipleEntries : 1;				// [5] - ToPA tables can hold any number of output entries, up to the maximum allowed by the MaskOrTableOffset field of IA32_RTIT_OUTPUT_MASK_PTRS
-	BOOLEAN bSingleRangeSupport : 1;				// [6] - Single-Range Output Supported
-	BOOLEAN bTransportOutputSupport : 1;			// [7] - Output to Trace Transport Subsystem Supported (Setting IA32_RTIT_CTL.FabricEn to 1 is supported)
-	BOOLEAN bIpPcksAreLip : 1;						// [8] - IP Payloads are LIP (Specifies if the generated packets that contain IP payloads have LIP values or RIP values)	<-- Very important
-	BYTE numOfAddrRanges;							// + 0x01 - Number of Address Ranges - specifies the number ADDRn_CFG field supported in IA32_RTIT_CTL for IP filtering	and IP TraceStop
-	SHORT mtcPeriodBmp;								// + 0x02 - Bitmap of supported MTC Period Encodings
-	SHORT cycThresholdBmp;							// + 0x04 - Bitmap of supported Cycle Threshold values
-	SHORT psbFreqBmp;								// + 0x06 - Bitmap of supported	Configurable PSB Frequency encoding
+	UINT16 bCr3Filtering : 1;						// [0] - CR3 Filtering Support (Indicates that IA32_RTIT_CTL.CR3Filter can be set to 1)
+	UINT16 bConfPsbAndCycSupported : 1;				// [1] - Configurable PSB and Cycle-Accurate Mode Supported (IA32_RTIT_CTL.PSBFreq can be set to a non-zero value, IA32_RTIT_STATUS.PacketByteCnt can be set to a non-zero value)
+	UINT16 bIpFiltering : 1;						// [2] - IP Filtering and TraceStop	supported, and Preserve Intel PT MSRs across warm reset
+	UINT16 bMtcSupport : 1;							// [3] - IA32_RTIT_CTL.MTCEn can be set to 1, and MTC packets will be generated (section 36.2.5)
+	UINT16 bPtWriteSupport : 1;						// [4] - indicates support of PTWRITE
+	UINT16 bPETSupport : 1;							// [5] - indicates support of Power Event Trace
+	UINT16 bVmxSupport : 1;							// [6] - Indicates whether Intel PT can be used in VMX operations
+	UINT16 bTopaOutput : 1;							// [7] - Tracing can be enabled with IA32_RTIT_CTL.ToPA = 1, hence utilizing the ToPA output scheme (section 36.2.4.2)
+	UINT16 bTopaMultipleEntries : 1;				// [8] - ToPA tables can hold any number of output entries, up to the maximum allowed by the MaskOrTableOffset field of IA32_RTIT_OUTPUT_MASK_PTRS
+	UINT16 bSingleRangeSupport : 1;					// [9] - Single-Range Output Supported
+	UINT16 bTransportOutputSupport : 1;				// [10] - Output to Trace Transport Subsystem Supported (Setting IA32_RTIT_CTL.FabricEn to 1 is supported)
+	UINT16 bIpPcksAreLip : 1;						// [11] - IP Payloads are LIP (Specifies if the generated packets that contain IP payloads have LIP values or RIP values)	<-- Very important
+	SHORT numOfAddrRanges;							// + 0x02 - Number of Address Ranges - specifies the number ADDRn_CFG field supported in IA32_RTIT_CTL for IP filtering	and IP TraceStop
+	SHORT mtcPeriodBmp;								// + 0x04 - Bitmap of supported MTC Period Encodings
+	SHORT cycThresholdBmp;							// + 0x06 - Bitmap of supported Cycle Threshold values
+	SHORT psbFreqBmp;								// + 0x08 - Bitmap of supported	Configurable PSB Frequency encoding
 };
 
 // The IA32_PERF_GLOBAL_STATUS descriptor of Intel Broadwell microarchitecture 

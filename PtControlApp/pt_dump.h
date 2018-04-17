@@ -116,6 +116,6 @@ int load_pt(struct pt_config *config, char *arg, const char *prog);
 int pt_dump(const struct pt_config *config, const struct ptdump_options *options);
 
 
-// binary dump 
+// AaLl86 DEFAULT binary dump 
 BOOL pt_dump_file(LPTSTR lpInputFile, LPTSTR lpOutFile, DWORD dwMaxSize = 0);
 BOOL pt_dumpW(LPBYTE lpBuff, DWORD dwBuffSize, HANDLE hOutFile, QWORD delta = 0ull, BOOLEAN bTraceOnlyKernel = FALSE);
