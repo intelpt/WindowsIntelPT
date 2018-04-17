@@ -1,11 +1,5 @@
 /********************************************************************
 *
-* [Microsoft Internal]
-* _____________________
-*
-*  (c) 2017 Microsoft Threat Intelligence Center (MSTIC)
-*  All Rights Reserved.
-*
 *  Author            : Andrea Allievi (andreaa)
 *  Date              : 06/23/2017
 *  Filename			 : Log.h

@@ -28,7 +28,7 @@ int NoCmdlineStartup()
 	TCHAR procPath[MAX_PATH] = { 0 };				// The target process full path
 	PT_USER_REQ ptStartStruct = { 0 };				// The Intel PT starting structure
 	DWORD dwBytesIo = 0;							// Number of I/O bytes
-	DWORD dwCpusCount = 0;							// Number of CPUs in which to run the code
+	DWORD dwCpusCount = 1;							// Number of CPUs in which to run the code
 	DWORD dwLastErr = 0;							// Last Win32 Error
 	KAFFINITY cpuAffinity = 0;						// The processor Affinity mask
 	BOOLEAN bDoKernelTrace = FALSE;					// TRUE if I would like to do kernel tracing

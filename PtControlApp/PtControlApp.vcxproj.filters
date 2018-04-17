@@ -22,6 +22,9 @@
     <Filter Include="libs">
       <UniqueIdentifier>{25fb05fc-58ba-4ffb-98f7-4d80df0b04dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ASM">
+      <UniqueIdentifier>{9dd12787-39f3-41e1-927a-280a77131790}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -60,6 +63,9 @@
     <ClInclude Include="UndocNt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -86,6 +92,9 @@
     <ClCompile Include="EntryPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="decoder\libipt.lib">
@@ -101,5 +110,10 @@
     <Image Include="res\cpu.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="asm\Amd64Control.asm">
+      <Filter>ASM</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

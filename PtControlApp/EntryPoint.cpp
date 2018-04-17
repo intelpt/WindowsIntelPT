@@ -11,7 +11,6 @@
 #include "stdafx.h"
 #include "IntelPtControlApp.h"
 #include "pt_dump.h"
-#include "WindowsEtw.h"
 
 // Global app data
 GLOBAL_DATA g_appData;
